@@ -1,0 +1,173 @@
+Router Component
+====================
+
+
+Router is utility that can compare incoming HTTP request against list of routes.
+
+Router's jobs:
+ - look for matching route (resolving route)
+ - generating URLs with supplied attributes
+
+In order to make this component as much framework agnostic as possible usage 
+is extremly simplified:
+ 
+1. Router will not execute matched route, instead it will return matched
+  route (if any) and delegate its execution to caller. 
+
+2. Only two values are needed to specify simple route: Path and Handler,
+   all other route properties are optional.
+
+
+
+Typical usage:
+
+# $RS= $this->GetService('Router');                       // grab service
+# $RS->LoadRoutes($RouteDefinitions);                     // load routes into router, this is optional - routes can also be loaded thru event listener
+# $Context= $RS->GetRequestContext()->FromGlobals();      // retrieve environment values, this is optional - it will be called by matcher if omitted
+# $Route= $RS->MatchRequest($Context);                    // analyze request
+# // analyze $Route and execute $Route->Handler
+.
+However minimal usage can be like this:
+# $Route= $this->GetService('Router')->LoadRoutes($RouteList)->MatchRequest();                 
+# return call_user_func(array($Route->Handler, 'Run'));
+
+Better perfomance can be achieved by loading routes by using event listener, simply ommit calling LoadRoutes method 
+and attach listener to 'Router.LoadRoutes' event with code like:
+#  public function ListenerOnAccentRouterLoadRoutes($Params) {
+#    $Struct= json_decode(file_get_content($Path));
+#    $Params['Routes']->AddRoutes($Struct);
+#  }
+That way (if caching is enabled) application will spare server from loading additional file from disk or database.
+In previous examples with manual calling LoadRoutes file will be always loaded, without real need
+(well, we assume that you will store routes somewhere out of application code).
+
+Load will:
+ - if caching enabled: load compiled routes from cache 
+ - if caching enabled but cache is empty: load from loaders and event, then compile them all and store in cache
+ - if not enabled: load routes from loaders and event
+
+During resolving each route will be compiled if not before because for non-cached service routes will be compiled only if needed
+
+Thanks to primitive structure of route definitions they can be easily and safely serialized and stored/loaded in external file 
+(routes.php or routes.yml) or database.
+
+Result of MatchRequest method can be:
+ - object of Route class: indicating that route was found, with details about that route
+ - null: indicating that route was not found (404 error)
+ - false: indicating that route was found but other requirements was failed (403 error)
+
+Within event listener you can freely manipulate with routes, for example:
+#  public function ListenerOnAccentRouterLoadRoutes($Params) {
+#    $Collection= $Params['Routes'];
+#    $Collection->AddRoute($RouteObject);           // for already built route object
+#    $Collection->AddRoute(array('Name'=>'about','Path'=>'about','Handler'=>'App/Controller/About::Run'));  // to build route from structure
+#    $Collection->AddRoutes(array(..));             // array or objects or structures or whole tree with sub-groups
+#    $SubGrp= $Collection->AddGroup($GroupRules);   // add sub-group with own set of rules
+#    $SubGrp->AddRoutes(array(..));                 // input routes into sub-collection
+# }
+
+If application has modules or extensions, event listener is the way how they can append its own routes into router.
+Additionaly, inside of event listener extension can modify existing route definitions or even delete them.
+
+Ideas for custom rules: Auth, Port, Throttler, EnvValue, CsrfProtection, ClassNS
+
+
+-- Terms ------------------------------------------------------------------------------------------
+
+"Route definition" - is array structure with values defining behaviour of route. 
+"Route definitions" - is array of "route definition" structures including nested groups of other definitions.
+"Route collection" or "route group" - is object of RouteGroup class, it is object form of route definitions.
+"Compiled route" - is internal shape of route optimized for matching process and for storing in cache.
+
+-- Route definition -------------------------------------------------------------------------------
+
+Route definition consist of following fields (properties):
+  - Name:     unique name of route (identifier), using for selecting route for some operations (optional)
+  - Path:     pattern which will be compared againt current URL to determinate route matching (primary rule)
+  - Handler:  arbitrary data which need to be returned as result of routing, typically classname or callable
+  - Regex:    regular expression which will determinate route matching (primary rule)
+  - Event:    name of event to trigger that should return true on positive matching (primary rule)
+  - Routable: set to false to prevent routing that route, it is only for URL generation)
+  - Validate: array of validation rules for variables from Path or Regex
+  - Method:   select required HTTP-method to match, glue multiple methods with '|'
+  - REST:     set to true to automaticaly append current HTTP method name to resulting Execute string
+  - Secure:   set to true to require secure connection (https) for positive matching
+  - Host:     set value to require matching with HTTP_HOST or SERVER_NAME
+
+-- Rules ------------------------------------------------------------------------------------------
+
+Each route during matching process will be sent to all loaded "rules" to be examined by them.
+Rule is actualy designed as object with two parts: 
+    - compiler
+    - checker
+Before examination each route must be prepared (compiled) for later validation, for example "path" rule will prepare 
+regex pattern in compiler and perform preg_match of that pattern later in checker.
+However if Router has loaded list of compiled routes from cache then only checkers will be executed.
+
+There are two type of rules: primary and secondary.
+Each route MUST consist of only one primary rule and unlimited number of secondary rules.
+Primary rule is the one that can detect which controller/page/resource is requested and secondary rules performs
+additional validations like authorization or HTTP-method check.
+Built in primary rules are: Path, RegEx, Event.
+
+Such construction allows developers to include their own rules and use them without effort.
+
+Rules must be stateless, no data can be internaly saved between checkings.
+
+
+-- RouteGroups ------------------------------------------------------------------------------------
+
+Larger projects usually have long list of route definitions.
+In order to simplify assignation of rules to routes and make it more readable developers have to group similar routes 
+into RouteGroups and move common rules from routes to group.
+
+Extensions should also group its own routes into separate group.
+
+Group in route definitions is represented as array of two elements:
+  - GroupRules:  array of group properties and default rules for all group members
+  - GroupRoutes: array of route definitions (group members)
+
+Values from GroupRules will be copied into (but not overwrite) each group member, and each sub-group if exist.
+
+However there are some special properties that instead to try to copy will prepend its value to existing route's value.
+There is only one built-in such property (PathPrefix) but extensions can register more.
+
+
+-- Dispatcher -------------------------------------------------------------------------------------
+
+Developers are encouraged to build its own dispatcher according to its own application logic.
+Present RouteDispatcher.php is only example (altrough fully functionaly) how it can be implemented.
+Application can totaly avoid usage of any dispatcher, it can manualy (hardcoded) call controller (presenter,...)
+based on result retrieved from Router matching.
+
+Typical usage of RouteDispatcher:
+# $Route= $this->GetService('Router')->LoadRoutes($RouteList)->MatchRequest();  
+# $Dispatcher= $this->BuildComponent('Accent\\Router\\RouteDispatcher'); 
+# // or $Dispatcher= new RouteDispatcher($this->GetCommonOprions());
+# $Dispatcher->Dispatch($Route);
+
+RouteDispatcher recognizes following route "handlers":
+ - 'ClassName::Method'    - it will staticaly call class and specified method
+ - 'ClassName'            - it will instantiate class and call 'Run' method
+ - 'ClassName->Method'    - it will instantiate class and call specified method
+ - '@ServiceName->Method' - it will retrieve service with specified name and call its method
+All classnames must be FQCN.
+All instantiation of classes will get $this->GetCommonOptions() as constructor param.
+All methods will get $Route object as method param.
+If specified class cannot be found it will try to redirect to handler of 501 error page.
+
+-- URL builder ------------------------------------------------------------------------------------
+
+UrlBuilder is service
+
+// usage:
+# $Builder= new UrlBuilder(array(
+#   'Routes'=> $Router->GetRoutes(),                  // or raw routes definition array
+#   'RequestContext'=> (new RequestContext($this->GetCommonOptions()))->FromGlobals(),    // optional
+# )+$this->GetCommonOptions());
+# // generating local (relative) URL:
+# $URL= $Builder->Build('About', array(...)); 
+# // generating absolute URLs: 
+# $URL= $Builder->Build('About', array(...), true); 
+
+---------------------------------------------------------------------------------------------------

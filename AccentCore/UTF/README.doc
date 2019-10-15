@@ -1,0 +1,6 @@
+UTF
+===
+Unfortunately PHP is still without support for manipulation of utf-8 strings.
+This component is well tested replacement for strlen, substr, strpos, strrpos, strtolower, strtoupper,...
+
+

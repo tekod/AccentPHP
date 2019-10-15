@@ -1,0 +1,13 @@
+Event
+=====
+
+In order to dispatch event there have to be instantied "event object" that can store some values (like DTO) allowing listeners to access/modify them.
+Altrough that was recomanded it is optional. 
+Some events are just "signals", they inform others that specified event was happen, without any parameter. Send "null" as parameter for such events.
+Some events does not expect returning values, they just inform listeners in immutable way about something. Send array of key-values for such events.
+
+Order of listeners execution can be adjusted using last parameter in AttachListener method.
+
+Listener can terminate execution of event and left other listeners unexecuted by returning true at end of method.
+
+Class Component has method EventDispatch() as shorthand for typical: $this->GetService('Event')->Execute(...)

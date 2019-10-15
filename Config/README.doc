@@ -1,0 +1,12 @@
+Config Component
+====================
+
+Class Config provides access to various formats and sources of configuration data.
+
+Supported sources are:
+- standard PHP script containing return array('key'=>'value',...)
+- ini file
+- xml file
+- json file
+- yaml file
+- database - using \Accent\DB component

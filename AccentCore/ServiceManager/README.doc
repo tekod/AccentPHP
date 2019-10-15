@@ -1,0 +1,6 @@
+Service manager
+===============
+Services are foundation of AccentPHP components. 
+All components must be linked to service manager to be able to use services.
+
+
