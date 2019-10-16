@@ -133,6 +133,9 @@ class Test__AppConfigFactory extends AccentTestCase {
         // reset to 'test'
         $this->Service->ResetEnvironment('test');
         $this->assertEqual($Conf->Get('Database'), '70.71.72.73');    // value 'Database' must be loaded from 'test' file
+
+        // clear playground
+        (new \Accent\AccentCore\File\File)->DirectoryClear( __DIR__.'/tmp');
     }
 
 }

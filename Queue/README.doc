@@ -1,0 +1,9 @@
+Queue package
+=============
+
+Queues allow you to defer the processing of a time consuming task, until a later time, 
+thus drastically speeding up the web requests to your application.
+
+QueueManager is interface between application and storage spaces where persistence is implemented.
+Application can use QueueManager to add/read/delete jobs from queue.
+

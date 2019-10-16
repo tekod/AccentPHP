@@ -91,6 +91,9 @@ class Test__File extends AccentTestCase {
         if ($Result !== '(*)') {
             $this->fail($Result);
         }
+        
+        // clear playground
+        (new \Accent\AccentCore\File\File)->DirectoryClear( __DIR__.'/tmp');
     }
 
 

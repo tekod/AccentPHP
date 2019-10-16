@@ -194,6 +194,9 @@ class Test__Config extends AccentTestCase {
             $Returned= $Config->Get('UTF8');
             $this->assertEqual($Returned, $V1, "Driver '$Name' returned ".var_export($Returned,true));
         }
+
+        // clear playground
+        (new \Accent\AccentCore\File\File)->DirectoryClear( __DIR__.'/tmp');
     }
 
 

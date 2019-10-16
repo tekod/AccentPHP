@@ -318,6 +318,8 @@ class Test__StackedConfig extends AccentTestCase {
         // check file again
         $this->assertTrue(is_file($this->ComponentDir.'Test/tmp/stacked/translation.xyz.yaml'));
 
+        // clear playground
+        (new \Accent\AccentCore\File\File)->DirectoryClear( __DIR__.'/tmp');
     }
 
 

@@ -309,6 +309,9 @@ class Test__HttpClient extends AccentTestCase {
         $this->assertTrue($Success);
         $Result= $Client->GetReceivedBody();
         $this->assertEqual($Result, '(Ok)');
+
+        // clear playground
+        (new \Accent\AccentCore\File\File)->DirectoryClear( __DIR__.'/tmp');
     }
 
 
