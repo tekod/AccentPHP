@@ -1,0 +1,42 @@
+Storage package
+===============
+Storage is component/service specialized for saving key-value pairs in various,
+mainly persistent locations.
+Typical use case for this component is implementation of caching service or
+configuration loader/writer.
+
+Large number of built-in storage drivers makes easy handling of widely 
+used formats of files or popular external services and even more: effortless
+switching from using one to using another storage mechanism.
+
+All storage drivers supports two important features:
+ - TTL (time to live): to achieve expiration of stored data 
+ - tags: to makes easy invalidation of related data
+
+File-based drivers can use two storage strategies:
+ - compact
+ - distributed
+
+Selecting compact strategy will store all values in single big file in filesystem
+while distributed will create separate file for each key.
+Managing one file is much faster then distributed files but for very large amount 
+of data it can become slower. Choose strategy according to use case.
+
+File-based drivers uses "advisary locking" mechanism to prevent data loss 
+because of race condition in reading/writing operations.
+
+
+Examples:
+
+$Storage= new Storage([
+    'Driver'=> 'Php',
+    'Path'=> __DIR__.'/data/cache/partials.php',
+    'Mode'=> 'Compact',
+] + $this->GetCommonOptions());
+
+
+$Storage= new Storage([
+    'Driver'=> 'Redis',
+    'Prefix'=> 'AccentPHP/Test',
+    'Server'=> ['Host' => '127.0.0.1', 'Port' => 6379],
+] + $this->GetCommonOptions());

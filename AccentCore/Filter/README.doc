@@ -1,0 +1,19 @@
+Filter
+======
+This is group for various security tools.
+
+
+EscapeTrait
+-----------
+This trait will attach common escaping functions to classes.
+
+
+Sanitizer
+---------
+This service can remove invalid content from string, according to supplied rules.
+
+
+Validator
+---------
+This sservice can identify invalid content within string, according to supplied rules.
+

@@ -1,0 +1,13 @@
+Log service
+====================
+
+This service provides mechanisms for logging (acquisation and storing)
+arbitrary informations for later analysing.
+
+Multiple "writers" can be attached in logging process to make flexibile
+handling of messages with different importances.
+
+Purpose of acquisitors is to attach additional data to each message on-fly.
+
+
+

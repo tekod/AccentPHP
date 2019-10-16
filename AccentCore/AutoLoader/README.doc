@@ -1,0 +1,7 @@
+Autoloader
+==========
+Autoloader component is robust autoloading solution, 
+it support multiple autoloading processors 
+such as "CamelCase", "Namespace", "PSR0", "Prefix" and "Underscore",
+and extensible to include custiom processors.
+

@@ -1,0 +1,28 @@
+CHANGELOG
+=========
+
+1.0.0
+-----
+First public release.
+
+0.3.0
+-----
+- Added route property 'Secure'
+- Added route property 'REST'
+- Added route property 'Host'
+- Removed ability of closure-typed routes to modify its Execute. Althrough it
+  can be very interesing feature to programmaticaly modify target that makes
+  very hard to predict, track and debug routing. Best place to programmaticaly
+  redirect routing is to intercept router event.
+
+0.2.0
+-----
+- Refactored.
+- Execution is striped out from component, it should be done by application.
+- Path can contain optional segments.
+- Route property 'Id' renamed to 'Name'.
+- Route property 'Auth' removed, unauthorized visitor must see that URL is 
+  correct but need to be authorized to see content.
+
+
+

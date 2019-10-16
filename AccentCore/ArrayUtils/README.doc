@@ -1,0 +1,21 @@
+ArrayUtils group
+================
+This roup contains common utilities for dealing with arrays.
+
+
+ArrayUtils 
+----------
+Class ArrayUtils has methods for converting between YAML, INI, XML, JSON,...
+
+
+Collection 
+----------
+Collection object is feature-rich implementation of \IteratorAggregate and it is widely used in Accent packages.
+
+
+Mapper
+------
+Mapper is adapter object, it will redirect access to array keys according to programmed rules.
+
+
+

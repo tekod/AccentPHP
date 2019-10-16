@@ -1,0 +1,59 @@
+Accent core package
+====================
+
+Core package contains common classes required by all other Accent packages.
+
+Classes for basic concepts (autoloader, Component, Service manager, Events,..) 
+are declared here.
+
+There are following directories in this package:
+
+ - ArrayUtils   - group of common utilities for dealing with arrays
+ - Autoloader   - robust autoloading solution
+ - Debug        - set of debugging tools
+ - Event        - dispatching/listening system of events
+ - File         - set of tools for dealing with files
+ - Filter       - set of various security tools
+ - Service mngr - service manager implementation
+ - UTF          - utf-8 aware replacements for strlen, substr, strpos, strrpos, strtolower, strtoupper,...
+ - Test         - contains unit tests, can be removed in production
+
+Each directory has its own README.doc file with more detailed description of components and their usage.
+
+
+Component class
+===============
+This class is ultimate ancestor of almost all other AccentPHP objects. 
+
+It defines some handful features like:
+ - constructor options factory
+ - error handling
+ - plugins support
+ - quick-access methods for few common services
+
+
+RequestContext
+==============
+Because direct access to superglobals ($_SERVER, $_FILES, $_ENV,...) are 
+not permmited in Accent components they fetching that values from RequestContext. 
+
+Basically this is DTO with few fancy getters and setters.
+Some normalization of values will be internaly performed after any setter operation.
+
+Instance of this object is typically injected in constructor options of other objects
+allowing them to reach emulated superglobals.
+
+
+Stacker
+=======
+This is utility for making stack (collection) of objects of same type.
+Stack mimics behaviour of these objects by passing all calls to object on top
+so consumers are not aware of its real nature.
+
+For example components have to fetch some data from RequestContext but within 
+sub-requests there must be stored different values.
+Solution is to make Stacker object as service named something like 'GetRequestContext'
+and push normal RequestContext object in it.
+When subrequest arrives just push new RequestContext object in that service and all
+components will receive new values.
+Class Accent\Application\AbstractKernel doing exactly that.

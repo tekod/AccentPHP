@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stupid>
+    
+    <Slashes>/cache/</Slashes>
+
+    <MultiLine>First
+Second</MultiLine>
+
+    <UTF8>Košta 1€</UTF8>
+
+    <Array>
+        <one>a</one>
+        <two>b</two>
+    </Array>
+
+</stupid>

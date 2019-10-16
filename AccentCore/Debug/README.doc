@@ -1,0 +1,30 @@
+Debug
+=====
+There is set of debugging tools.
+
+
+Debug
+-----
+Debug service contians profiler, call-stack presenter and rich variable dumper.
+
+
+CrashReporter
+-------------
+This utility can execute some actions on application fatal error, typically it will collect informations and send email to admin.
+
+
+Logger & TLogger
+----------------
+They are simply file logger utilities that are self-contained so they can be used in very early stages of application.
+
+
+Terminator
+----------
+This utility will terminate application if detect existence of specified "flag" files. 
+That is a good way to terminate stucked loops or CLI apps.
+
+
+Tracer
+------
+Tracer is advanced version of logger, ideal solution for tracing application execution.
+

@@ -1,0 +1,22 @@
+CHANGELOG
+=========
+
+1.1.0
+-----
+- Message object is now stand alone, separated from transportion drivers.
+- Updated SwiftMailer subpackage (Swift-5.4.3)
+
+1.0.0 
+-----
+- First stabile version.
+- Added AttachData field.
+- Bugfixes. 
+
+0.2.0
+------
+- Added events Mail.SendEnvelope.Before and Mail.SendEnvelope.After.
+- Bugfixes.
+
+0.1.0 
+-----
+- First published version as stand alone service.

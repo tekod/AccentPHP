@@ -1,0 +1,26 @@
+Testing environment
+===============================
+
+Tests of AccentPHP components are based on simpletest testing libraray
+(included in package).
+
+Package contains mini web application to run available tests (./Test.php) 
+but it cannot be called directly becouse package (together with other packages)
+need to be in protected part of hosting.
+
+In order to execute testing application you must create new php file in 
+document_root, arbitrary named, with folowing content:
+
+<?php // entry for AccentPHP test platform
+  define('ACCENTTEST_PASSWORD', '123456');
+  include '../Vendor/Accent/Test/Test.php';
+?>
+
+Please, make these two modifications before saving file:
+  - set password with something unique, 
+  - redirect path to point to correct location of test package
+
+Don't worry that you may forget it 
+because in that case you can always look in this file.
+Ofcourse, comment is not mandatory but helps later, as reminder, to describe 
+you for what purpose you create this file.

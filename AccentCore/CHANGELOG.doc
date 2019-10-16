@@ -1,0 +1,12 @@
+CHANGELOG
+=========
+
+1.0.0
+-----
+
+CrashReporter becomes part of core, stand alone project discontinued.
+
+Removed from File class: UploadFile, DownloadFile, SendFile, LoadWithSocket, LoadWithCurl.
+Use Network/HttpClient for this purposes.
+
+Event component rewrited, now accepts Event-objects as parameter, renamed to EventService.

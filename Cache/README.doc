@@ -1,0 +1,32 @@
+Cache Component
+====================
+
+Class Cache provides access to various formats and sources of configuration data.
+
+Persistance of data is delegated to Accent\Storage\Storage component that is most suited fot this job.
+Because of its large number of built-in drivers cache can be stored in various locations:
+in database, in filesystem, in memory, in external services, nowhere,...
+
+Usage of "cache tags" makes cache invalidations very easy to achieve.
+Most Storage drives supports tags.
+
+Select name storage engine using contructor option "Storage" (default value is "php" 
+which meaning that PhpDriver will be used and file will contain ".php" extension).
+
+Other options will be used to cofigure storage drivers, see default-options 
+of each driver to find what options you need to specify in constructor.
+
+Example setting up simple cache using files as storage:
+$Cache= new Cache([
+    'Storage'=> 'File',
+    'Path'   => __DIR__.'/../data/cache', // unique storage directory
+    'Ext'    => '.dat', // alter file extension of cache file
+]);
+
+.. or database:
+$Cache= new Cache([
+    'Storage'=> 'db',
+    'Table'=> 'Cache',
+]);
+
+

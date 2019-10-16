@@ -1,0 +1,21 @@
+Request Component
+====================
+
+
+Request handles interaction with running enviroment.
+Enviroment is represented as context in which target controller will be executed.
+Such construction allowing creation of sub-requests with modified enviroment variables
+which will put targeting controller in quite different context then original HTTP request.
+
+Controllers and methods should use Request to:
+ - get current URL
+ - get supplied $_GET and $_POST vars
+ - get info about server (OS,CGI,SAPI,...)
+ - get info about user (IP address, browser_user_agent,...)
+
+This component should not be used as service, instead inject it's instance
+(or make it accessible in another way) in constructor of other objects.
+That way ensure isolation of thread "kernel-request-router-controler" from laters
+sub-requests, or even sub-applications.
+If you use Request as service it will be imposible to differentiate contexts
+for main and sub-requests.
