@@ -33,7 +33,7 @@ class Storage extends Component {
         // data TTL (time to live) in seconds or false for permanent
         'Expire'=> false,
 
-        // version of Accent/Storage package
+        // version of component
         'Version'=> '1.0.0',
     );
 
