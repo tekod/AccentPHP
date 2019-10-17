@@ -1,0 +1,15 @@
+{
+    "Simple": "simple",
+
+    "'Quoted'": "'Quotes'",
+
+    "MultiLine": "First\nSecond",
+
+    "UTF8": "Košta 1€",
+
+    "Array": {
+        "one":"a",
+        "two":"b"
+    }
+
+}

@@ -1,0 +1,8 @@
+Localisation Component
+====================
+
+Localisation allows application to use:
+ - multilanguage strings at user interface,
+ - adapted date format
+ - adapted number format
+ - adapted currency format

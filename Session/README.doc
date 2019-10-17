@@ -1,0 +1,34 @@
+Session Component
+====================
+
+Session package encapsulate common functions for basic managing of visitors data.
+
+This package offers several built-in storage engines for visitor's variables,
+allowing developers to choose best solution for each project or to use theirs custom engine.
+
+Session internally use cookies to identify visitor.
+Content of cookie is random generated string which will be used as key for retrieving
+data from storage. Developer can configure component to periodically change that key.
+
+Stored visitor's data are persistent between HTTP requests but have general lifetime
+to prevent occuping too much hosting resources.
+
+ReadOnce session variables are special type of variables, they are persistent between
+requests but gets destroyed after first fetching thru GetData method.
+
+
+..
+
+..
+
+
+
+This component does not implement so called "flash" variables.
+Why? Becouse ReadOnce concept is better replacement for same tasks flash vars using for.
+Flash stores a value and lets you retrieve it in the next request. The problem is that
+the next request may not be what you think it is.
+It might be another browser tab/window from the same user. It might be an AJAX request.
+It might be a JS script or CSS file served up by your application (via a controller).
+In addition, extra redirects/forwards can cause confusion with flash and/or data to be
+"used up" in the wrong request.
+

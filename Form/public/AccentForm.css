@@ -1,0 +1,87 @@
+/**
+ * Part of the Accent framework.
+ *
+ * @author     Miroslav Ćurčić <office@tekod.com>
+ * @license    MIT License
+ * @link       http://www.accentphp.com
+ */
+
+/**
+ * Default styles for rendering form
+ */
+
+form table th, form table td {
+    vertical-align: top;
+}
+
+input, textarea, select {
+    background-color: #ddd;
+}
+
+input:focus, textarea:focus, select:focus {
+    background-color: white;
+    box-shadow: 0 0 8px 2px #8df;
+}
+
+/* zebra */
+.frOdd {
+    background-color: #222;
+}
+
+ul.fcGroup {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* error message */
+.fError {
+    font-size: 80%;
+    transition: all 0.3s;
+}
+.fError ul::before {
+    margin-top: -1px;
+    border-color: inherit;
+    border-width: 1px 0 0 1px;
+    background-color: inherit;
+    left: 2em;
+    top: 0;
+    border-style: solid;
+    content: "";
+    height: 1em;
+    position: absolute;
+	-webkit-transform:translateX(-50%) translateY(-50%) rotate(45deg);
+	-ms-transform:translateX(-50%) translateY(-50%) rotate(45deg);
+	transform:translateX(-50%) translateY(-50%) rotate(45deg);
+    width: 1em;
+}
+.fError ul {
+    position: relative;
+    display: inline-block;
+    color: #fdd;
+    list-style: none;
+    margin: 3px 0 1px -4px;
+    padding: 1em 1em;
+    background-color: #a00;
+    border: 1px solid #ecc;
+    border-radius: 6px;
+    font-weight: 700;
+    opacity: 1;
+    line-height: 1;
+    transition: all 0.3s;
+}
+
+.fcError {
+    background-color: #fbb !important;
+    box-shadow: 0 0 6px 0 red;
+}
+
+/* classes for animation of error tooltips */
+.fErrorTransition ul {
+    opacity: 0;
+    margin: 0;
+    padding: 0;
+}
+.fErrorTransition {
+    font-size: 0px;
+}

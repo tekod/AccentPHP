@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stupid>
+
+    <Simple>simple</Simple>
+
+    <!--
+    <'Quoted'>'Quotes'</'Quoted'>
+
+    Quoted example will fail becouse it violated XML rules:
+        Tag names cannot contain any of the characters !"#$%&'()*+,/;<=>?@[\]^`{|}~,
+        nor a space character, and cannot start with -, ., or a numeric digit.
+     -->
+
+    <MultiLine>First
+Second</MultiLine>
+
+    <UTF8>Košta 1€</UTF8>
+
+    <Array>
+        <one>a</one>
+        <two>b</two>
+    </Array>
+
+</stupid>

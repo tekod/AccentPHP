@@ -1,0 +1,8 @@
+
+
+CSRF zaštita bi mogla ići kroz globalni servis - Security\AntiCSRF
+
+konfiguracija forme bi mogla prihvatati servis 'AntiCSRF' čiji bi metod "Validate" vraćao boolean
+
+primer:
+https://github.com/paragonie/anti-csrf

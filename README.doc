@@ -1,6 +1,42 @@
 AccentPHP
 =========
 
-AccentPHP is robust high-quality, decoupled libraries that can be used in any codebase.
+AccentPHP is collection of robust, high-quality, decoupled libraries that can be used in any codebase.
+
+
+Documentation
+-------------
+Writing documentation is in progress...
+
+
+Requirements
+------------
+PHP ver. 5.4+ ili 7+
+
+
+Installation
+------------
+Download packages from GitHub and extract them into protected part of your application,
+no package require to be accessible through web.
+It is recomanded group all packages in single directory because of autoloader,
+but it is not necessary if you manually setup your autoloader.
+
+
+License
+-------
+AccentPHP is released under the MIT license. See the bundled LICENSE file for details.
+
+
+Running tests
+-------------
+Create somewhere in web accessible directory php file with this content:
+<?php // entry for AccentPHP test platform
+  define('ACCENTTEST_PASSWORD', '123456');
+  include 'Path/To/Accent/Test/Test.php';
+?>
+Path must point to file "Test.php" in "Test" package.
+Password ensures that only admin can run it.
+
+
 
 Author: office@tekod.com

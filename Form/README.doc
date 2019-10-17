@@ -1,0 +1,54 @@
+Form Component
+====================
+
+Goal of this component is to allow developer to define whole form, its structure and behaviours, as simple array.
+
+This approach has several benefites: 
+
+a) that array is easy to serialize (or JSON) and store in database, fetch later from public side, import in form factory and echo as fully functional form with all modern features like filters, validators, markers, inline errors,...
+
+b) storing form definition in database makes trivial to build its backend page "edit form" allowing modifications without altering any source code file,
+
+c) automatization, this component has "diff" feature which examine initial and submitted form data, compare them and exports report to application's "log" service. Tracking of changes is extremely useful feature but only enterprise CMS applications has that covered.
+
+
+Example, simple contact form:
+
+$Form= new Form([
+    'Action'=> 'Test.php',
+    'Controls'=> [
+        'Department'=> [
+            'Type'=> 'Select',
+            'List'=> ['Management','Sales','Tech.support'],
+        ],
+        'Message'=> [
+            'Type'=>'Textarea',
+            'Validate'=> 'Required',
+        ],
+        'Agree'=> [
+            'Type'=> 'Checkbox',
+            'Value'=> 'Y',
+            'Validate'=> 'Required',
+        ],        
+    ],
+    'Buttons'=> [
+        'Send'=> [
+            'Label'=> 'Send',
+            'Type'=> 'submit',
+        ],
+    ],
+    'Services'=> [...],
+));
+
+// import values from request
+$Form->SetHttpValues($_POST);
+
+// validate fields
+if ($Form->Validate()) {
+    $Values= $Form->GetValues();
+    ... send email to stuff ...
+    return;
+}
+
+// show contact form
+echo $Form->Render();
