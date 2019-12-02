@@ -47,10 +47,10 @@ class Test__Localization extends AccentTestCase {
                 'Grouped'=> array(      // for tests of grouped translations
                 ),                      // will be overwritten in each testcase
             ),
-            'BookLoader'=> array(    // choose which loader to call for specified book
+            'Books'=> array(
                 'ini'=> 'INI1',
             ),
-            'DefaultLoader'=> 'php1', // which loader to use for books not listed in BookLoader
+            'DefaultLoader'=> 'php1', // which loader to use for books not listed in Books
             'LangAliases'=> array(  // aliases
                 null=> 'sr',
                 '@'=> 'en',
@@ -138,7 +138,7 @@ class Test__Localization extends AccentTestCase {
 
         $LocalOptions= $this->BuildOptions();
         $LocalOptions['LoaderConfigs']['php1']['Directories']= array(); // clear main book
-        $LocalOptions['BookLoader'] += array('Months'=>'Grouped', 'DaysOfWeek'=>'Grouped');
+        $LocalOptions['Books'] += array('Months'=>'Grouped', 'DaysOfWeek'=>'Grouped');
 
         // test AllBooks option
         $LocalOptions['LoaderConfigs']['Grouped']= array(
@@ -271,7 +271,7 @@ class Test__Localization extends AccentTestCase {
         $Options['LangFilesRootDir']= __DIR__;   // also testing 'LangFilesRootDir' option
         // specify loader as array, order does matter
         // we could use $Options['DefaultLoader']=array(...) as well
-        $Options['BookLoader']['main']= array('php1','ini1');
+        $Options['Books']['main']= array('php1','ini1');
         // perform tests
         $L= new Localization($Options);
         $this->assertEqual($L->Translate('Demo1'), 'first'); // Demo1 is not overwritten
@@ -287,14 +287,14 @@ class Test__Localization extends AccentTestCase {
         $Msg= $L->Translate('FirstDemo');
         $this->assertEqual($Msg, 'Ovo je demo.');
         $NewTranslation= 'ABCD';
-        $L->SetTranslation('FirstDemo','en',null,$NewTranslation);
+        $L->SetTranslation('FirstDemo', 'en', null, $NewTranslation);
         $this->assertEqual($L->Translate('FirstDemo'), 'Ovo je demo.');
         $this->assertEqual($L->Translate('FirstDemo',null,'en'), $NewTranslation);
         $this->assertEqual($L->Translate('ReplacingDemo',null,'en',array('Ann')), 'Hi Ann');
     }
 
 
-    public function TestAddingLoader() {
+    public function TestRegisterLoader() {
 
         $Options= $this->BuildOptions();
         $L= new Localization($Options);
@@ -309,8 +309,8 @@ class Test__Localization extends AccentTestCase {
             'AllLanguages'=> true,
         );
         // configure new loader and specify loader for $Book
-        $L->SetBookLoaderConfig($LoaderName, $LoaderConfig);
-        $L->SetBookLoader($Book, $LoaderName);
+        $L->RegisterLoader($LoaderName, $LoaderConfig);
+        $L->RegisterBook($Book, $LoaderName);
         $this->assertEqual($L->Translate('2#Months',null,'en'), 'February');
     }
 
@@ -318,7 +318,7 @@ class Test__Localization extends AccentTestCase {
     public function TestSetBookRedirection() {
 
         $Options= $this->BuildOptions();
-        $Options['BookLoader'] += array('Months'=>'Grouped', 'DaysOfWeek'=>'Grouped');
+        $Options['Books'] += array('Months'=>'Grouped', 'DaysOfWeek'=>'Grouped');
         $Options['LoaderConfigs']['Grouped']= array(
             'LoaderClass'=> 'PHP',
             'Files'=> __DIR__.'/grouping/all-langs-and-books.php',

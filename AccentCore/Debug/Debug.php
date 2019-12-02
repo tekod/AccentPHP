@@ -8,7 +8,7 @@
  * @link       http://www.accentphp.com
  */
 
-/*
+/**
  * Set of methods for various debuging tasks:
  *   - measuring time of execution (benchmark, profiling)
  *   - getting tracing data to particlar execution point (call stack)
@@ -35,51 +35,76 @@
  *
  * This class is not descendant of Component class in order to be operative as early as possible
  * and be independent and isolated from other systems.
- * That's why it directly access to superglobals.
+ * That's why it has directly access to superglobals.
  */
 
 
 class Debug {
 
+    // identifier of session,
+    // see constructor description for possible values
+    protected $AuthKey= false;
 
+    // value fetched from cookie
+    protected $AuthKeyFromCookie= 0;
 
-    protected $DebugId= false;  // set to true/false to implicitly enable logging
-                                // and profiling functions or integer to enable
-                                // for users with cookie containing that integer
-    protected $CookieId= 0;
+    // as string to specify path of log file
+    // as boolean true to keep logs in memory
+    protected $ProfilerFile= false;
 
-    protected $ProfilerFile= false;// as string to specify path of log file
-                                // as boolean true to keep logs in memory
+    // TLogger object
     protected $Profiler;
+
+    // timestamp of first profiler event
     protected $ProfilerStartTime;
+
+    // timestamp of last profiler event
     protected $ProfilerPrevTime;
 
-    protected $MaxVarDumpNesting= 5;    // maximum loop level for VarDump method
-    protected $VarDumpHashes= array();  // internal buffer for detecting recursions
+    // maximum loop level for VarDump method
+    protected $MaxVarDumpNesting= 5;
 
-    protected static $Instances= array();   // storage for staticaly built instances
+    // internal buffer for detecting recursions
+    protected $VarDumpHashes= array();
+
+    // storage for statically built instances
+    protected static $Instances= array();
+
+    // name of cookie for session identification
+    protected $CookieName= '';
 
 
     /**
      * Constructor.
      *
-     * @param bool|integer $DebugId  see description for $this->DebugId
+     * Possible options:
+     *   AuthKey: - set to true/false to implicitly enable logging and profiling functions
+     *            - set as integer to enable for users with cookie containing that integer
+     *
+     * @param array $Options
      */
     public function __construct($Options=array()) {
 
-        // set permition of ID of desired user
-        $this->DebugId= isset($Options['DebugId'])
-            ? $Options['DebugId']
-            : true; // allow to all by default
-        // if DebugId is integer allow user to set cookie value via GET
-        if (intval($this->DebugId) > 0 && isset($_GET['AccentDebugId'])) {
-            setcookie('AccentDebugId', intval($_GET['AccentDebugId']));
+        // set default (missing) options
+        $Options += array(
+            'AuthKey'=> true,                   // allow to all by default
+            'CookieName'=> 'AccentDebugKey',
+        );
+
+        // export options
+        $this->AuthKey= $Options['AuthKey'];
+        $this->CookieName= $Options['CookieName'];
+
+        // if AuthKey is string allow user to set cookie value via GET
+        if (strlen($this->AuthKey) > 10 && isset($_GET[$this->CookieName]) && $_GET[$this->CookieName] === $this->AuthKey) {
+            setcookie($this->CookieName, $_GET[$this->CookieName]);
             // make it valid for current request
-            $_COOKIE['AccentDebugId']= intval($_GET['AccentDebugId']);
+            $_COOKIE[$this->CookieName]= $_GET[$this->CookieName];
         }
+
         // get ID of current user
-        $this->CookieId= isset($_COOKIE['AccentDebugId'])
-            ? intval($_COOKIE['AccentDebugId'])
+        $this->AuthKeyFromCookie= isset($_COOKIE[$this->CookieName])
+            ? $_COOKIE[$this->CookieName]
             : false;
     }
 
@@ -88,12 +113,13 @@ class Debug {
      * Factory (singleton) method for invoking class staticaly.
      *
      * @param string $InstanceName  allows to call specified instacne by its name
+     * @param array $Options  configuration for new object
      * @return object
      */
-    public static function Instance($InstanceName='Primary') {
+    public static function Instance($InstanceName='Primary', $Options=array()) {
 
         if (!isset(static::$Instances[$InstanceName])) {
-            static::$Instances[$InstanceName]= new static;
+            static::$Instances[$InstanceName]= new static($Options);
         }
         return static::$Instances[$InstanceName];
     }
@@ -103,12 +129,12 @@ class Debug {
      * Is current visitor authenticated as developer?
      * This will allow writing log files on disk.
      */
-    public function AuthorizedSession() {
+    public function IsAuthorizedSession() {
 
-        if (is_bool($this->DebugId)) {
-            return $this->DebugId;
+        if (is_bool($this->AuthKey)) {
+            return $this->AuthKey;
         }
-        return $this->CookieId === $this->DebugId;
+        return $this->AuthKeyFromCookie === $this->AuthKey;
     }
 
 
@@ -120,22 +146,29 @@ class Debug {
 //---------------------------------------------------------------------------
 
 
-    // display specified stack point in format: "/../include/index.php on line (146)"
+    /**
+     * Display specified stack point in format: "/../include/index.php on line (146)"
+     *
+     * @param int $n  specify which point to show
+     * @param bool $ShowFullPath  whether to show only basename of file or full path
+     * @return type
+     */
     public static function ShowStackPoint($n, $ShowFullPath=true) {
 
     	$CallStack = debug_backtrace();
-    	if (!isset($CallStack[$n]))
+    	if (!isset($CallStack[$n])) {
     		return "sorry, stack point '$n' not exist.";
-    	$res= '';
+        }
+    	$Res= '';
     	$Line= $CallStack[$n];
-    	$res .= (isset($Line['file']))
-    		? (($ShowFullPath) ? $Line['file'] : basename($Line['file'])).' '
-    		: "unknown file (anonymous func or call_user_func) ";
-    	$res .= (isset($Line['line']))
-    		? "on line ($Line[line])"
-    		: "unknown line number";
-    	return ($res)
-    		? $res
+    	$Res .= (isset($Line['file']))
+    		? ($ShowFullPath ? $Line['file'] : basename($Line['file']))
+    		: "unknown file (anonymous func or call_user_func)";
+    	$Res .= (isset($Line['line']))
+    		? " on line ($Line[line])"
+    		: ", unknown line number";
+    	return ($Res)
+    		? $Res
     		: "sorry, no informations about point '$n'.";
     }
 
@@ -200,7 +233,9 @@ class Debug {
         $CallStack = debug_backtrace($btOptions);
         $Lines= array();
         foreach($CallStack as $k=>$v) {
-            if ($k < 3) continue;
+            if ($k < 3) {
+                continue;
+            }
             if (isset($v['file'])) {
                 $Where= $v['file'];
                 foreach($RemovePrefixes as $Prefix) {
@@ -224,10 +259,18 @@ class Debug {
     }
 
 
+
+//---------------------------------------------------------------------------
+//
+//                Profiler functions
+//
+//---------------------------------------------------------------------------
+
+
     /**
      * Inities logging system.
      *
-     * @param string|bool $LogFile  full path to output logging file, '.php' will be appended or true to sore logs in memory
+     * @param string|bool $LogFile  full path to output logging file ('.php' will be appened) or true to store logs in memory
      */
     public function ProfilerStart($LogFile, $Caption='DEBUG LOG') {
 
@@ -238,7 +281,7 @@ class Debug {
             array(str_pad('| Description', 80, ' '), STR_PAD_RIGHT),
         );
         $this->ProfilerFile= $LogFile;
-        $this->Profiler= new TLogger($LogFile, $Caption, $Cols, $this->AuthorizedSession(), true);
+        $this->Profiler= new TLogger($LogFile, $Caption, $Cols, $this->IsAuthorizedSession(), true);
     }
 
 
@@ -249,7 +292,7 @@ class Debug {
      */
     public function Mark($Message, $Timestamp=0, $Memory=0) {
 
-        if (!$this->AuthorizedSession() || !$this->ProfilerFile || !$this->Profiler) {
+        if (!$this->IsAuthorizedSession() || !$this->ProfilerFile || !$this->Profiler) {
             return;
         }
         if (!$Timestamp) {
@@ -495,9 +538,11 @@ class Debug {
         // debug tool
         $keys= array_keys($GLOBALS);
         $Out= array();
-        for($x=count($keys)-1; $x>=0; $x--) {
+        for($x= count($keys)-1; $x>=0; $x--) {
             $k= $keys[$x];
-            if ($k == 'GLOBALS') continue;
+            if ($k == 'GLOBALS') {
+                continue;
+            }
             $before= memory_get_usage(true);
             unset($GLOBALS[$k]);
             gc_collect_cycles();

@@ -8,7 +8,7 @@
  * @link       http://www.accentphp.com
  */
 
-/*
+/**
  * CrashReporter will send/store usefull informations on FatalError occurances.
  *
  * It is split in two main blocks: "collector" and "writer".
@@ -94,6 +94,7 @@ class CrashReporter extends Component {
      */
     public function __construct($Options) {
 
+        // call ancestor
         parent::__construct($Options);
 
         // export 'Writer' to local property

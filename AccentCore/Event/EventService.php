@@ -102,6 +102,11 @@ class EventService extends Component {
      */
     public function Execute($EventName, $EventObject=null, $ExtraListeners=array()) {
 
+        // if event object is omitted - instantiate BaseEVent without options
+        if ($EventObject === null) {
+            $EventObject= [];
+        }
+
         // if event object is specified as array - instantiate BaseEvent with that options
         if (is_array($EventObject)) {
             $EventObject= new BaseEvent($EventObject);
@@ -111,18 +116,18 @@ class EventService extends Component {
         $Listeners= array_merge($ExtraListeners, $this->GetListeners($EventName));
         $this->TraceDebug('Event "'.$EventName.'" ('.count($Listeners).' listeners found).');
 
-        // prepare execution context
-        $Context= array(
+        // set execution context
+        $EventObject->SetContext(array(
             'EventName'   => $EventName,                // listeners can be attached using wildcard
             'EventService'=> $this,                     // allowing listeners to call other events
             'App'         => $this->GetOption('App'),   // allowing listeners to access application
-        );
+        ));
 
         // loop
   	    foreach($Listeners as $Listener) {
 
             // execute callable
-            $Result= $this->ExecuteListener($Listener, $EventObject, $Context);
+            $Result= $this->ExecuteListener($Listener, $EventObject);
 
             // terminate loop if listener returns true
             if ($Result === true) {
@@ -139,7 +144,7 @@ class EventService extends Component {
     /**
      * Run listener callable.
      */
-    protected function ExecuteListener($Listener, $EventObject, $Context) {
+    protected function ExecuteListener($Listener, $EventObject) {
 
         // get callable
         $Callable= $this->ResolveCallable($Listener[2]);
@@ -148,10 +153,10 @@ class EventService extends Component {
         if ((is_array($Callable)) ) {
             // checking with is_callable doesnt work for array definition
             // this is for array(class,method)
-            return call_user_func($Callable, $EventObject, $Context);
+            return call_user_func($Callable, $EventObject);
         } else if (is_callable($Callable)) {
             // this is for anything else
-            return $Callable($EventObject, $Context);
+            return $Callable($EventObject);
         }
     }
 

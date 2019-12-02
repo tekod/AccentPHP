@@ -19,23 +19,43 @@ use \Accent\Security\RBAC\DataProvider\AbstractDataProvider;
 class ArrayDataProvider extends AbstractDataProvider {
 
 
+    // default cofiguration
     protected static $DefaultOptions= array(
-        'Data'=> array(
-            'Roles'=> array(),
-            'Permition-Role'=> array(),
-            'RoleInheritances'=> array(),
-            'User-Role'=> array(),
-        ),
+
+        //
+        'Roles'=> array(),
+
+        //
+        'Permition-Role'=> array(),
+
+        //
+        'RoleInheritances'=> array(),
+
+        //
+        'User-Role'=> array(),
+
     );
 
+    // internal properties
     protected $Data;
 
 
+    /**
+     * Constructor.
+     */
     public function __construct($Options) {
 
+        // call ancestor
         parent::__construct($Options);
 
-        $this->Data= $this->GetOption('Data');
+        // expost configuration into local property
+        $this->Data= [
+            'Roles'=>  $this->GetOption('Roles'),
+            'Permition-Role'=>  $this->GetOption('Permition-Role'),
+            'RoleInheritances'=>  $this->GetOption('RoleInheritances'),
+            'User-Role'=>  $this->GetOption('User-Role'),
+        ];
+
     }
 
 
@@ -118,16 +138,16 @@ class ArrayDataProvider extends AbstractDataProvider {
      * Create new role.
      *
      * @param string $RoleName
-     * @param string $Description
+     * @param array $Properties
      * @param array $Inherits
      * @return mixed  Id of new role
      */
-    public function CreateRole($RoleName, $Description='', $Inherits=array()) {
+    public function CreateRole($RoleName, $Properties=[], $Inherits=[]) {
 
         if (isset($this->Data['Roles'][$RoleName])) {
             return false;
         }
-        $this->Data['Roles'][$RoleName]= $Description;
+        $this->Data['Roles'][$RoleName]= $Properties;
         if (!empty($Inherits)) {
             $this->Data['RoleInheritances'][$RoleName]= $Inherits;
         }
@@ -605,7 +625,6 @@ class ArrayDataProvider extends AbstractDataProvider {
             return array();
         }
         $this->LoopDetection(null);
-        //$this->LoopDetection($RoleId);
         return $this->GetRoleInheritances_Recursive($this->Data['RoleInheritances'][$RoleId]);
     }
 

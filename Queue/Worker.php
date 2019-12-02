@@ -29,6 +29,8 @@
  */
 
 use Accent\AccentCore\Component;
+use Accent\Queue\Event\WorkerEvent;
+use Accent\Queue\Event\JobEvent;
 
 
 class Worker extends Component {
@@ -278,7 +280,8 @@ class Worker extends Component {
         }
 
         // notify listeners to register all job handlers
-        $this->EventDispatch('Queue.RegisterHandlers', ['Worker'=>$this]);
+        $Event= new WorkerEvent(['Worker'=>$this]);
+        $this->EventDispatch('Queue.RegisterHandlers', $Event);
 
         // start infinite loop
         do {
@@ -320,7 +323,8 @@ class Worker extends Component {
         }
 
         // allow event listeners to terminate loop (event interrupt mode)
-        if ($this->EventDispatch('Queue.Worker.Loop', ['Worker'=>$this])) {
+        $Event= new WorkerEvent(['Worker'=>$this]);
+        if ($this->EventDispatch('Queue.Worker.Loop', $Event)) {
             $this->Log('Worker loop is terminated by event listener');
             return true;
         }
@@ -369,17 +373,18 @@ class Worker extends Component {
         // ask event listeners to handle this job
         $JobId= $this->Job->GetRecord('Id');
         $JobName= $this->Job->GetRecord('JobName');
-        $this->EventDispatch('Queue.Worker.Process:'.$JobName, $this->Job);
+        $Event= new JobEvent(['Job'=>$this->Job]);
+        $this->EventDispatch('Queue.Worker.Process:'.$JobName, $Event);
 
         // if nobody handles that job trigger orphan event
         // this is last chance to process this job
         if (!$this->Job->GetHandled()) {
-            $this->EventDispatch('Queue.Worker.OrphanJob', $this->Job);
+            $this->EventDispatch('Queue.Worker.OrphanJob', $Event);
         }
 
         // if job remains unhandled
         if (!$this->Job->GetHandled()) {
-            $this->EventDispatch('Queue.Worker.UnhandledJob', $this->Job);
+            $this->EventDispatch('Queue.Worker.UnhandledJob', $Event);
             $this->Log("Unhandled job #$JobId ($JobName)");
             $this->UnhandledJob($this->Job->GetRecord());
             return null;
@@ -391,14 +396,14 @@ class Worker extends Component {
             list($IncFailCount, $RunAfter)= $this->Job->GetReleased();
             $this->Driver->Release($this->Job->GetRecord(), $IncFailCount, $RunAfter);
             //$this->TraceDebug("Queue: released job #$JobId ($JobName)");
-            $this->EventDispatch('Queue.Worker.ReleasedJob', $this->Job);
+            $this->EventDispatch('Queue.Worker.ReleasedJob', $Event);
             return false;
         }
 
         // job was executed successfully, remove it from queue
         $this->Driver->Delete($JobId);
         //$this->TraceDebug("Queue: executed job #$JobId ($JobName)");
-        $this->EventDispatch('Queue.Worker.ExecutedJob', $this->Job);
+        $this->EventDispatch('Queue.Worker.ExecutedJob', $Event);
         return true;
     }
 

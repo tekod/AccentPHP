@@ -38,7 +38,7 @@ class Localization extends Component {
     const MEDIUM_DATE = 3;
     const SHORT_DATE  = 4;
 
-
+    // default constructor options
     protected static $DefaultOptions= array(
 
         // language to use as default
@@ -47,19 +47,24 @@ class Localization extends Component {
         // first translations will be loaded from 'main.php'
         'DefaultBook'=> 'main',
 
+        // register books and their assigned loaders
+        'Books'=> [
+            // 'MyNewBook'=> 'db1',  // register "MyNewBook" and assign "db1" loader to it
+        ],
+
         // prepare configuration for loader which will be invoked
         'LoaderConfigs'=> array(
             'php1'=> array(         // first PHP loader
-                'LoaderClass'=> 'PHP',  // or YML, INI, JSON, XML, DB
+                'LoaderClass'=> 'PHP',    // short name for local [PHP, YML, INI, JSON, XML, Database,..] or FQCN
                 'Directories'=> array(),// list of full paths where to search for books
                 'Files'=> array(),      // list of full paths to files with translations
             ),
         ),
 
         // choose which loader to call for specified book
-        'BookLoader'=> array(
-            //'MyNewBook'=> 'db1',  // load 'MyNewBook' from database
-        ),
+//        'BookLoader'=> array(
+//            //'MyNewBook'=> 'db1',  // load 'MyNewBook' from database
+//        ),
 
         // which loader to use for books not listed in BookLoader
         'DefaultLoader'=> 'php1',
@@ -94,18 +99,21 @@ class Localization extends Component {
         ),
     );
 
-    // buffer for translated strings, grouped by language and then grouped by book
-    protected $Tables= array();
+    // book registry
+    protected $Books= [];
 
-    // loader objects
-    protected $Loaders= array();
+    // buffer for translated strings, grouped by language and then grouped by book
+    protected $Tables= [];
+
+    // array of loader objects
+    protected $Loaders= [];
 
     // storage for redirection of books
-    protected $BookRedirectings= array();
+    protected $BookRedirectings= [];
     protected $BookRedirectingCount= 0;
 
     // cache for pluralization resolvers
-    protected $PluralizationRuleCache= array();
+    protected $PluralizationRuleCache= [];
 
     // some internal constants for delocalization
     protected $EnglishMonths= array('January','February','March','April','May','June','July','August','September','October','November','December');
@@ -115,12 +123,20 @@ class Localization extends Component {
     protected $TimeOffset= 0;
 
     // specify aliases for languages that will be resolved within Msg() and Translate(), example: array(null=>'en', '@'=>'fr')
-    protected $LangAliases= array();
+    protected $LangAliases= [];
 
 
-    public function __construct($Options= array()) {
+    /**
+     * Constructor.
+     */
+    public function __construct($Options=[]) {
 
+        // call ancestor
         parent::__construct($Options);
+
+        // init book and loader registry
+        $this->Books= $this->GetOption('Books');
+        $this->Loaders= $this->GetOption('LoaderConfigs');
 
         // aliases can be changed latter by calling SetLangAliases()
         $this->SetLangAliases($this->GetOption('LangAliases'));
@@ -138,7 +154,7 @@ class Localization extends Component {
 
         $this->LangAliases=
             $Aliases
-            + array(null=>$this->GetOption('DefaultLang'))
+            + [null => $this->GetOption('DefaultLang')]
             + $this->LangAliases;
     }
 
@@ -174,13 +190,13 @@ class Localization extends Component {
         $Lang= strtolower($this->ResolveLang($Lang));
 
         // retrieve message
-        $Message= $this->FindMessage($Code, $Book, $Modifier, $Lang);
+        $Message= $this->FindMessage($Code, $Book, $Lang);
 
         // apply modifier
         $Message= $this->ApplyModifier($Message, $Modifier, $Lang);
 
         // inject replacers
-        $Replace= ($Replace === null || $Replace === '') ? array() : (array)$Replace;
+        $Replace= ($Replace === null || $Replace === '') ? [] : (array)$Replace;
         if (!is_array($Message) && !empty($Replace)) {
             $Message= vsprintf($Message, $Replace);
         }
@@ -188,6 +204,14 @@ class Localization extends Component {
     }
 
 
+    /**
+     * Perform modifier tansformations to content.
+     *
+     * @param string $Message  content
+     * @param string $Modifier  instructions
+     * @param string $Lang  language
+     * @return string|array
+     */
     protected function ApplyModifier($Message, $Modifier, $Lang) {
 
         // check '|' modifier
@@ -215,10 +239,14 @@ class Localization extends Component {
     }
 
 
-    /*
+    /**
      * Perform search for specified message and use loaders if necessary
+     *
+     * @param string $Code  identifer of translatable content
+     * @param string $Book  name of book
+     * @param string $Lang  identifier of language
      */
-    protected function FindMessage($Code, $Book, $Modifier, $Lang) {
+    protected function FindMessage($Code, $Book, $Lang) {
 
         // is this new language?
         if (!isset($this->Tables[$Lang])) {
@@ -239,24 +267,30 @@ class Localization extends Component {
         }
         // further fallback in backend language, frontend often hasn't all translations
         if ($Lang <> $this->LangAliases['@']) {
-            return $this->FindMessage($Code, $Book, $Modifier, $this->LangAliases['@']);
+            return $this->FindMessage($Code, $Book, $this->LangAliases['@']);
         }
         return $Code; // return untranslated string
     }
 
 
-    /*
+    /**
      * Initialization tasks for adding each new language in table.
+     *
+     * @param string $Lang  language identifier
      */
     protected function InitNewLanguageTable($Lang) {
+
         // initialize table and load default book
         $this->Tables[$Lang]= array();
         $this->LoadBook($Lang, $this->GetOption('DefaultBook', 'main'));
     }
 
 
-    /*
+    /**
      * Return 2-char value for $Lang by resolving null and '@' cases.
+     *
+     * @param string $Lang  language identifier
+     * @return string
      */
     protected function ResolveLang($Lang) {
 
@@ -266,61 +300,103 @@ class Localization extends Component {
     }
 
 
-    /*
+    /**
      * Return final book name by resolving null case and book-redirections.
+     *
+     * @param string $BookName  name of book
+     * @return string
      */
-    protected function ResolveBook($BookOption) {
+    protected function ResolveBook($BookName) {
 
-        $Book= ($BookOption === null || $BookOption === '')
+        $Book= $BookName === null || $BookName === ''
             ? $this->GetOption('DefaultBook', 'main')
-            : (string)$BookOption;
+            : (string)$BookName;
+
         // look for redirections and return another book if redirection is found
         foreach(array_reverse($this->BookRedirectings) as $R) {
-            if ($R['From'] == $Book) {
+            if ($R['From'] === $Book) {
                 return $R['To'];
             }
         }
-        // return
+
+        // return result
         return $Book;
     }
 
 
-    /*
+    /**
      * Perform loading new translations from its sources.
+     *
+     * @param string $Lang  language
+     * @param string|array $Book  name of book
      */
     protected function LoadBook($Lang, $Book) {
-        // get loaders for this book
-        // it is possible to declare multiple loaders for single book
-        $Loaders= $this->GetOption('BookLoader.'.$Book, array($this->GetOption('DefaultLoader')));
 
-        foreach((array)$Loaders as $LoaderName) {
+        $Loaders= $this->GetLoadersForBook($Book);
 
-            // construct loader if not exist
-            if (!isset($this->Loaders[$LoaderName])) {
-                $this->CreateLoader($LoaderName);
-            }
-            // load data into table
-            $Lines= $this->Loaders[$LoaderName]->Load($Lang, $Book);
-            $this->Tables= $this->MergeArrays(array($this->Tables, $Lines));
+        // for each loader - load data into table
+        foreach($Loaders as $Loader) {
+            $Lines= $Loader->Load($Lang, $Book);
+            $this->Tables= $this->MergeArrays([$this->Tables, $Lines]);
         }
-        // dispatching event allows extensions to override values in this book
+
+        // dispatching an event allows extensions to override values in this book
         $this->EventDispatch('Localization.LoadBook', ['Localization'=>$this, 'Lang'=>$Lang, 'Book'=>$Book]);
     }
 
 
-    /*
-     * Loader factory
+    /**
+     * Get list of loaders assigned to specified book.
+     *
+     * @param string $Book  name of book
+     * @return array of loader objects
      */
-    protected function CreateLoader($Name) {
+    protected function GetLoadersForBook($Book) {
 
-        $Conf= $this->GetOption('LoaderConfigs.'.$Name) + array(
+        $Loaders= [];
+
+        // get loaders for this book
+        $LoaderNames= isset($this->Books[$Book]) ? $this->Books[$Book] : $this->GetOption('DefaultLoader');
+
+        // it is possible to declare multiple loaders for single book, force array type
+        if (!is_array($LoaderNames)) {
+            $LoaderNames= [$LoaderNames];
+        }
+
+        // collect objects
+        foreach($LoaderNames as $LoaderName) {
+            // ensure that loaders are instantiated
+            if (!is_object($this->Loaders[$LoaderName])) {
+                $this->CreateLoader($LoaderName);
+            }
+            $Loaders[]= $this->Loaders[$LoaderName];
+        }
+
+        // return list of objects
+        return $Loaders;
+    }
+
+
+    /**
+     * Loader factory.
+     *
+     * @param string $LoaderName  name of loader
+     */
+    protected function CreateLoader($LoaderName) {
+
+        // prepare constructor options
+        $Conf= $this->Loaders[$LoaderName] + [
             'LoaderClass'=> '_Unknown_',
             'LangFilesRootDir'=> $this->GetOption('LangFilesRootDir'),
-        ) + $this->GetCommonOptions();
-        $LoaderName= ucfirst(strtolower($Conf['LoaderClass']));
-        //if($Name=='Grouped')     var_dump(debug_backtrace(0));
-        $Class= '\\Accent\\Localization\\Loader\\'.$LoaderName.'Loader';
-        $this->Loaders[$Name]= new $Class($Conf);
+        ];
+
+        // prepare full qualified class name
+        $FQCN= strpos($Conf['LoaderClass'], '\\') === false
+            ? '\\Accent\\Localization\\Loader\\'.ucfirst(strtolower($Conf['LoaderClass'])).'Loader'
+            : $Conf['LoaderClass'];
+
+        // instantiate loader object
+        $this->Loaders[$LoaderName]= $this->BuildComponent($FQCN, $Conf);
     }
 
 
@@ -349,9 +425,13 @@ class Localization extends Component {
     }
 
 
-    /*
+    /**
      * Examine all expressions in string and return first matching message.
      * String must be constructed like: '[1]one|[2]two|[n>2&&n<5]few|[n>=5]much'
+     *
+     * @param string $Messages
+     * @param int $Num
+     * @return string
      */
     protected function ResolveNumericChoice($Messages, $Num) {
 
@@ -375,9 +455,13 @@ class Localization extends Component {
     }
 
 
-    /*
+    /**
      * Perform evalution of supplied expression.
      * This is used by ResolveNumericChoice method.
+     *
+     * @param string $Expression
+     * @param int $n
+     * @return string
      */
     protected function EvaluteExpression($Expression, $n) {
 
@@ -393,66 +477,37 @@ class Localization extends Component {
     }
 
 
-    /*
+    /**
      * Choose part of message according to pluralization rule for specified language.
+     *
+     * @param string $Messages
+     * @param int $Num
+     * @param string $Lang
+     * @return string
      */
     protected function ResolvePluralizationChoice($Messages, $Num, $Lang) {
 
         $Messages= explode('|', $Messages);
+
         // special case '0' - return first element if it was supplied, otherwise continue
-        if ($Num <= 0 && $Messages[0]<>'') {
+        if ($Num <= 0 && $Messages[0] <> '') {
             return $Messages[0];
         }
+
         // get resolver function
         if (!isset($this->PluralizationRuleCache[$Lang])) {
             $Rule= intval($this->Translate('PluralizationRule', null, $Lang)); // 0 for unknown
             $this->PluralizationRuleCache[$Lang]= $this->GetPluralizationFunc($Rule);
         }
         $Func= $this->PluralizationRuleCache[$Lang];
+
         // calculate which pluralization form to use
         $Index= $Func($Num)+1;
- //echo'<br>Mess: '.implode(',',$Messages);
- //echo'<br>Num: '.$Num;
- //echo'<br>Index: '.$Index;
+
         // return $Index element of $Messages (or last one if element not found)
-        return (isset($Messages[$Index]))
+        return isset($Messages[$Index])
             ? $Messages[$Index]
             : end($Messages);
-    }
-
-
-
-
-    /**
-     * Specify which loader should be used to load specifed book of translations.
-     * Extensions can use this method to add new books after service initialization.
-     *
-     * @param atring $Book
-     * @param string $Loader
-     * @return \Accent\AccentCore\Localization\Localization
-     */
-    public function SetBookLoader($Book, $Loader) {
-
-        $Loaders= $this->GetOption('BookLoader.'.$Book, array());
-        $Loaders[]= $Loader;
-        $this->SetOption('BookLoader.'.$Book, $Loaders);
-        return $this;
-    }
-
-
-    /**
-     * Set configuration for specifed loader of translations.
-     * Extensions can use this method to add new loaders after service initialization.
-     *
-     * @param string $Loader name of loader
-     * @param array $ConfigOptions array of options:
-     *                  'LoaderClass' key choose loader engine ('PHP','YML','INI','DB',..)
-     *                  for rest of options see default options of that engine
-     */
-    public function SetBookLoaderConfig($Loader, $ConfigOptions) {
-
-        $this->SetOption('LoaderConfigs.'.$Loader, $ConfigOptions);
-        return $this;
     }
 
 
@@ -461,15 +516,33 @@ class Localization extends Component {
      *
      * @param string|array $Book
      * @param string $LoaderName
-     * @param array $ConfigOptions
+     * @return self
      */
-    public function AddBook($Book, $LoaderName, $ConfigOptions) {
+    public function RegisterBook($Book, $LoaderName) {
 
+        // force array type, there can be multiple books registered at once
         $Books= is_array($Book) ? $Book : array($Book);
+
+        // assign loader to each book
         foreach($Books as $B) {
-            $this->SetBookLoader($B, $LoaderName);
+            $this->Books[$B]= $LoaderName;
         }
-        $this->SetBookLoaderConfig($LoaderName, $ConfigOptions);
+
+        // chaining
+        return $this;
+    }
+
+
+    /**
+     * Register additional loader and specify its configuration (or instantied loader object).
+     *
+     * @param string $LoaderName
+     * @param array $Config
+     * @return self
+     */
+    public function RegisterLoader($LoaderName, $Config) {
+
+        $this->Loaders[$LoaderName]= $Config;
         return $this;
     }
 
@@ -654,7 +727,7 @@ class Localization extends Component {
         } else {
             $Format= $FormatType; // already supplied as formatting string
         }
-        $Timestamp += $this->GetOption('TimeOffset', 0);
+        $Timestamp += $this->TimeOffset;
         $LocalizedFormat= $this->LocalizeDateFormat($Timestamp, $Format, $Lang);
         return date($LocalizedFormat, $Timestamp);
     }
@@ -667,7 +740,7 @@ class Localization extends Component {
 
         $TranslationKey= 'FormatTime.'.($ShowSeconds ? 'Full' : 'Short');
 		$Format= $this->Translate($TranslationKey, null, $Lang);
-        $Timestamp += $this->GetOption('TimeOffset', 0);
+        $Timestamp += $this->TimeOffset;
         return date($Format, $Timestamp);
     }
 
@@ -712,7 +785,7 @@ class Localization extends Component {
    //echo '<br>Parsed: ';var_dump($Parsed);
         $Timestamp= mktime($Parsed['hour'],$Parsed['minute'],$Parsed['second'],
                 $Parsed['month'],$Parsed['day'],$Parsed['year']);
-        return $Timestamp - $this->GetOption('TimeOffset', 0);
+        return $Timestamp - $this->TimeOffset;
     }
 
 
@@ -756,17 +829,20 @@ class Localization extends Component {
      */
     protected function LocalizeDateFormat($Timestamp, $FormatString, $Lang) {
 
-    //echo '<br>Format: ';var_dump($FormatString);
         $UTF= $this->GetService('UTF');
+
         // get numerical values for all items which may be presented as text
         // currently they are name of month and name of day of week
-        $LocalizableItems= gmdate('N,n', $Timestamp + $this->GetOption('TimeOffset',0));
+
+        $LocalizableItems= gmdate('N,n', $Timestamp + $this->TimeOffset);
         list($DayOfWeek,$Month)= explode(',', $LocalizableItems);
+
         // get translated titles but dont cache them to allow overwritting and book redirecting
 		$MonthTitle= $this->Translate('FormatDate.Months', $Month, $Lang);
         $ExpMonth= $UTF->str_split($MonthTitle);
 		$DayOfWeekTitle= $this->Translate('FormatDate.DaysOfWeek', $DayOfWeek, $Lang);
         $ExpDayOfWeek= $UTF->str_split($DayOfWeekTitle);
+
         // prepare replacements
         $Replace= array(
             'l'=> '\\'.implode('\\',$ExpDayOfWeek),
@@ -774,39 +850,36 @@ class Localization extends Component {
             'F'=> '\\'.implode('\\',$ExpMonth),
             'M'=> '\\'.implode('\\',array_slice($ExpMonth,0,3)),
         );
-    //echo '<br>Replace: ';var_dump($Replace);
+
         // preserve escaped letters (\l \D \F \M) by removing them from format string
         $Preserve= array();
         foreach(array_keys($Replace) as $k=>$v) {
             $Preserve['\\'.$v]= '{{{{{{{{'.$k.'}}}}}}}}';
         }
-   //echo '<br>Preserve: ';var_dump($Preserve);
+
 
         $FormatString= strtr($FormatString, $Preserve);
-   //echo '<br>Format: ';var_dump($FormatString);
 
         // perform text replacing
-        //$TranslatedFormat= str_replace(array_keys($Replace), array_values($Replace), $FormatString);
         $TranslatedFormat= strtr($FormatString, $Replace);
-   //echo '<br>TranslatedFormat: ';var_dump($TranslatedFormat);
 
         // return preserved letters
         $Output= strtr($TranslatedFormat, array_flip($Preserve));
-   //echo '<br>Output: ';var_dump($Output);
 
+        // result
         return $Output;
     }
 
 
     /**
-     * Set new value for TimeOffset configuration option.
+     * Set new value for TimeOffset.
      *
      * @param int $OffsetInSeconds
      * @return \Accent\AccentCore\Localization\Localization
      */
     public function SetTimeOffset($OffsetInSeconds) {
 
-        $this->SetOption('TimeOffset', intval($OffsetInSeconds));
+        $this->TimeOffset= intval($OffsetInSeconds);
         return $this;
     }
 

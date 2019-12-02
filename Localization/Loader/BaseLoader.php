@@ -15,26 +15,42 @@ use \Accent\AccentCore\Component;
 
 class BaseLoader extends Component {
 
-
+    // default constructor options
     protected static $DefaultOptions= array(
-        'Directories'=> array(),    // list of full paths where to search for books
-        'Files'=> array(),          // list of full paths to book files
-        'FileExtension'=> null,     // extension of resource file names, null for automatic
-        'AllLanguages'=> false,     // are translations grouped by language
-        'AllBooks'=> false,         // are translations grouped by book
-    );
 
+        // list of full paths where to search for books
+        'Directories'=> array(),
+
+        // list of full paths to book files
+        'Files'=> array(),
+
+        // extension of resource file names, null for automatic
+        'FileExtension'=> null,
+
+        // are translations grouped by language
+        'AllLanguages'=> false,
+
+        // are translations grouped by book
+        'AllBooks'=> false,
+    );
 
     protected $FileExtension= '.php';
 
+    // internal properties
+    protected $Directories;
 
+
+    /**
+     * Constructor.
+     */
     function __construct($Options) {
 
+        // call ancestor
         parent::__construct($Options);
 
-        // strip out trailing slashes
-        $this->SetOption('Directories', (array)$this->GetOption('Directories'));
-        foreach($this->Options['Directories'] as &$Dir) {
+        // export option and strip out trailing slashes
+        $this->Directories= (array)$this->GetOption('Directories');
+        foreach($this->Directories as &$Dir) {
             $Dir= rtrim($Dir,'/\\');
         }
         // override file extension
@@ -55,8 +71,8 @@ class BaseLoader extends Component {
         foreach((array)$this->GetOption('Files') as $File) {
             $Paths[]= str_replace(array_keys($Wildcards), array_values($Wildcards), $File);
         }
-        foreach($this->GetOption('Directories') as $Dir) {     // add files from dirs
-            $File= (strpos($Dir,'@Lang')===false && strpos($Dir,'@Book')===false)
+        foreach($this->Directories as $Dir) {     // add files from dirs
+            $File= strpos($Dir,'@Lang') === false && strpos($Dir,'@Book') === false
                 ? "$Dir/$Lang/$Book".$this->FileExtension
                 : $Dir.$this->FileExtension;
             $Paths[]= str_replace(array_keys($Wildcards), array_values($Wildcards), $File);

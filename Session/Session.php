@@ -30,7 +30,7 @@ class Session extends Component {
         // cookie settings
         'Cookie'=> array(
             'Name'=> 'sid',
-            'Expire'=> 7200,        // lifetime, default on 2 hours
+            'Expire'=> 7200,        // lifetime, default on 2 hours (7200 secs), zero for session-only
             'Path'=> '/',
             'Domain'=> 'localhost',
             'CustomGetter'=> '',    // callable which return content of cookie
@@ -78,7 +78,7 @@ class Session extends Component {
     protected $Stored= false;
 
     // values of session cookie parametars
-    protected $CookieElements= array();
+    protected $Cookie= array();
 
 
 
@@ -88,11 +88,14 @@ class Session extends Component {
      */
     public function __construct($Options=array()) {
 
+        // call ancestor
         parent::__construct($Options);
 
+        // unpack Cookie option
+        $this->Cookie= $this->GetOption('Cookie');
         // maximum allowed session lifetime is 24 hours
         // remember that session should not be used as means for "remember me" functionality
-        $this->SetOption('Cookie.Expire', min(86400, $this->GetOption('Cookie.Expire')));
+        $this->Cookie['Expire']= min(86400, $this->Cookie['Expire']);
 
         // try to get session-id from request
         $this->SetIdFromCookie();
@@ -101,13 +104,10 @@ class Session extends Component {
         register_shutdown_function(array($this, 'OnShutdown'));
 
         // attach event listener to trigger $this->SendCookie
-        $EventService= $this->GetService('Event');
-        if ($EventService) {
-            $ThisService= $this;
-            $EventService->AttachListener('Output.Send', function() use ($ThisService) {
-                $ThisService->SendCookie();
-            });
-        }
+        $ThisService= $this;
+        $this->RegisterEventListener('Output.Send', function() use ($ThisService) {
+            $ThisService->SendCookie();
+        });
     }
 
 
@@ -121,6 +121,7 @@ class Session extends Component {
             return;
         }
         $this->Loaded= true;
+
         // call driver
         $Found= ($this->SessionId)
             ? $this->GetDriver()->Read($this->SessionId, $this->SessionOldId)
@@ -129,6 +130,7 @@ class Session extends Component {
             $this->CreateNewSession();   // new session ID will be assigned here if missing
             return;
         }
+
         // unpack loaded session
         $this->SessionId= $Found['Id'];         // loaded ID can alter SessionId here
         $this->SessionOldId= $Found['OldId'];
@@ -137,6 +139,7 @@ class Session extends Component {
         $this->SessionTimeRotated= $Found['TimeRotated'];
         $this->Data= $Found['Data'];
         $this->DataOnce= $Found['DataOnce'];
+
         // don't hold 'OldId' info for more then 30 seconds, dont update OldId storage records
         if (time() - $this->SessionTimeRotated > 30) {
             $this->SessionOldId= '';
@@ -220,11 +223,13 @@ class Session extends Component {
         $this->SessionTimeRotated= 0;
         $this->Data= array();
         $this->DataOnce= array();
+
         // safe disconnect from current session and release locks
         if ($this->SessionId) {
             $this->StoreSession();
             $this->CloseSession();
         }
+
         // clear ids and flags
         $this->SessionId= '';
         $this->SessionOldId= '';
@@ -324,15 +329,18 @@ class Session extends Component {
 
         $Content= $this->GetCookie();
         $Ids= explode('|', $Content, 2);
+
         // validate both IDs in single call
         if (!$this->IsValidId(implode('',$Ids))) {
             return false;
         }
+
         // safe disconnect from current session
         if ($this->SessionId) {
             $this->StoreSession();
             $this->CloseSession();
         }
+
         // set new ids
         $this->SessionId= $Ids[0];
         $this->SessionOldId= isset($Ids[1]) ? $Ids[1] : '';
@@ -524,38 +532,35 @@ class Session extends Component {
     //----------------------------------------------
 
 
+    /**
+     * Set cookie content.
+     */
     protected function SetCookie() {
+
         // called from CreateNewSession and RotateId,
         // both methods cannot be executed in same request
-        if ($this->GetOption('Driver') == 'Array') {
-            return; // Array driver is not persistant, so it does not require cookie
-        }
-        $C= $this->GetOption('Cookie');
         $Content= ($this->SessionOldId)
             ? $this->SessionId.'|'.$this->SessionOldId
             : $this->SessionId;
-        $Expire= ($C['Expire'] === 0)
-            ? 0
-            : time() + $C['Expire'];
-        $this->CookieElements= array(
-            'Value'=> $Content,
-            'Expire'=> $Expire,
-            'Path'=> $C['Path'],
-            'Domain'=> $C['Domain'] === 'localhost' ? null : $C['Domain'],
-            'Secure'=> false,
-        );
+        $this->Cookie['Value']= $Content;
     }
 
+
+    /**
+     * Retrieve content of session cookie.
+     *
+     * @return string
+     */
     protected function GetCookie() {
 
-        $C= $this->GetOption('Cookie');
         // try with custom getter
-        if ($C['CustomGetter']) {
-            $Func= $C['CustomGetter'];
-            return $Func($C['Name']);
+        if ($this->Cookie['CustomGetter']) {
+            $Func= $this->Cookie['CustomGetter'];
+            return $Func($this->Cookie['Name']);
         }
+
         // read from cookie
-        return $this->Input($C['Name'], 'COOKIE');
+        return $this->Input($this->Cookie['Name'], 'COOKIE');
     }
 
 
@@ -569,9 +574,7 @@ class Session extends Component {
      */
     public function SetCookieExpiration($Expire) {
 
-        $this->CookieElements['Expire']= $Expire;
-
-        //echo '<br>SetCookieExpiration:'.date('Y-m-d  h:i',$Expire).'<br>';
+        $this->Cookie['Expire']= intval($Expire);
     }
 
 
@@ -582,22 +585,37 @@ class Session extends Component {
      */
     public function SendCookie() {
 
-        if ($this->CookieElements === null) {
-            return; // already sent
+        // is cookie already sent?
+        if ($this->Cookie === null) {
+            return;
         }
-        if (!isset($this->CookieElements['Value'])) {
-            //return; // not prepared
+
+        // Array driver is not persistant, so it does not require cookie
+        if ($this->GetOption('Driver') === 'Array') {
+            return;
+        }
+
+        // if not prepared do it now
+        if (!isset($this->Cookie['Value'])) {
             $this->SetCookie();
         }
-        $C= $this->GetOption('Cookie');
-        extract($this->CookieElements);
-        if ($C['CustomSetter']) {
-            $Func= $C['CustomSetter'];
-            $Func($C['Name'], $Value, $Expire, $Path, $Domain);
+
+        // prepare cookie parameters
+        $Name= $this->Cookie['Name'];
+        $Value= $this->Cookie['Value'];
+        $Expire= $this->Cookie['Expire'] === 0 ? 0 : time() + $this->Cookie['Expire'];
+        $Path= $this->Cookie['Path'];
+        $Domain= $this->Cookie['Domain'] === 'localhost' ? null : $this->Cookie['Domain'];
+
+        // dispatch cookie
+        if ($this->Cookie['CustomSetter']) {
+            $Func= $this->Cookie['CustomSetter'];
+            $Func($Name, $Value, $Expire, $Path, $Domain, false);
         } else {
-            setcookie($C['Name'], $Value, $Expire, $Path, $Domain);
+            setcookie($Name, $Value, $Expire, $Path, $Domain, false);
         }
-        $this->CookieElements= null;
+        // marker
+        $this->Cookie= null;
     }
 
 } // End

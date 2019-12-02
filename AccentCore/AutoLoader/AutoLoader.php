@@ -113,6 +113,9 @@ class AutoLoader {
     }
 
 
+    /**
+     * Setup built-in processors.
+     */
     protected function InitInternalProcessors() {
 
         $this->RegisterProcessor('Namespace', array(__CLASS__,'Processor_Namespace'));

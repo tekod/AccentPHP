@@ -34,9 +34,9 @@ abstract class AbstractDataProvider extends Component {
 
     abstract public function GetAllRoles();
 
-    abstract public function CreateRole($RoleName, $Description='', $Inherits=array());
+    abstract public function CreateRole($RoleName, $Properties=[], $Inherits=[]);
 
-    abstract public function UpdateRole($RoleId, array $Values);
+    abstract public function UpdateRole($RoleId, array $Properties);
 
     abstract public function DeleteRole($RoleId);
 
@@ -68,7 +68,7 @@ abstract class AbstractDataProvider extends Component {
 
     abstract public function RegisterPermition($Name, $AvailableActions='');
 
-    abstract public function UpdatePermition($PermId, array $Values);
+    abstract public function UpdatePermition($PermId, array $Properties);
 
     abstract public function RemovePermition($PermId);
 

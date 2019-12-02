@@ -48,24 +48,28 @@ class MockObject {
     public function Mock_SetProperty($Name, $Value, $Times=null) {
 
         $this->Mock_SetData('P-'.$Name, array($Value), $Times);
+        return $this;
     }
 
 
     public function Mock_SetPropertyValues($Name) {
 
         $this->Mock_Error('Setting multiple values for property "'.$Name.'" is not supported. It is bad idea to expect such behaivor from properties.');
+        return $this;
     }
 
 
     public function Mock_SetMethod($Name, $Value, $Times=null) {
 
         $this->Mock_SetData('M-'.$Name, array($Value), $Times);
+        return $this;
     }
 
 
     public function Mock_SetMethodValues($Name, array $Values, $Times=null) {
 
         $this->Mock_SetData('M-'.$Name, $Values, $Times);
+        return $this;
     }
 
     protected function Mock_SetData($Id, $Values, $Times) {

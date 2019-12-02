@@ -15,7 +15,7 @@
 */
 
 use Accent\AccentCore\Component;
-use Accent\AccentCore\RequestContext;
+use Accent\Router\Event\LoadRoutesEvent;
 
 
 class Router extends Component {
@@ -124,7 +124,8 @@ class Router extends Component {
             }
 
             // ... trigger event to allow listeners to add its routes
-            $this->EventDispatch('Router.LoadRoutes', ['Routes'=>$this->Routes]);
+            $Event= new LoadRoutesEvent(['Routes'=>$this->Routes]);
+            $this->EventDispatch('Router.LoadRoutes', $Event);
         }
 
         // mark & return

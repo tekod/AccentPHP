@@ -280,9 +280,6 @@ class AccentTestCase extends \UnitTestCase {
      */
     protected function BuildMemoryDatabaseService($Options=array()) {
 
-        //require_once __DIR__.'/../DB/DB.php';
-        //require_once __DIR__.'/../DB/Driver/AbstractDriver.php';
-        //require_once __DIR__.'/../DB/Driver/SqliteDriver.php';
         $this->TestCaseDB= new \Accent\DB\DB(
             $Options
             + array(

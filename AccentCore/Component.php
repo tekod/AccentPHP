@@ -463,34 +463,7 @@ abstract class Component {
             : array_diff_key($this->Options, array_flip($WithoutKeys));
     }
 
-    /**
-     * Set value in constructor's option.
-     * Use comma-separated syntax to reach deeper array node.
-     *
-     * @param string $Name
-     * @param mixed $Value
-     * @return mixed
-     */
-    public function SetOption($Name, $Value) {
-
-        if ($Name === null) {
-            return $this->Options;
-        }
-        $K= explode('.',$Name);
-        $Count= min(10, count($K));
-        // for root option
-        if ($Count == 1) {
-            $this->Options[$Name]= $Value;
-            return;
-        }
-        // using comma-separated keys
-        $Pointer= &$this->Options;
-        for($x=0; $x<$Count; $x++) {
-            $Pointer= &$Pointer[$K[$x]];
-        }
-        $Pointer= $Value;
-    }
-
+    
 
     //-----------------------------------------------------------------
     //

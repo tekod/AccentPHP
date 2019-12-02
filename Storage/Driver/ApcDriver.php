@@ -32,19 +32,30 @@ class CacheApcDriver extends AbstractDriver {
                            // per each writing but allows usage of ->Clear('*')
     );
 
+    // internal property
+    protected $APC_ID;
 
+
+    /**
+     * Constructor.
+     */
     public function __construct($Options) {
-        // call parent
+
+        // call ancestor
         parent::__construct($Options);
+
         // check APC extension
         if (!function_exists('apc_store')) {
             $this->Initied= false;
             $this->Error("APC extension not available.");
             return;
         }
-        if (!$this->GetOption('APC_ID')) {
-            $this->SetOption('APC_ID', $this->GenerateApcId());
-        }
+
+        // find APC ID
+        $this->APC_ID= $this->GetOption('APC_ID') === null
+            ? $this->GenerateApcId()
+            : $this->GetOption('APC_ID');
+
         // successfully initied
         $this->Initied= true;
     }
@@ -58,7 +69,9 @@ class CacheApcDriver extends AbstractDriver {
             return apc_exists($ApcKey);
         }
         $Result= apc_fetch($ApcKey, $Success);
-        if ($Result===false || !$Success) return false;
+        if ($Result === false || !$Success) {
+            return false;
+        }
         // check index
         return $this->ValidateTags($Result['Tags'], $Result['Timestamp']);
     }
@@ -66,7 +79,7 @@ class CacheApcDriver extends AbstractDriver {
 
     protected function GetKey($Key) {
         // adding prefix to user's key
-        return $this->GetOption('APC_ID').'.'.$Key;
+        return $this->APC_ID.'.'.$Key;
     }
 
 
@@ -74,7 +87,7 @@ class CacheApcDriver extends AbstractDriver {
         // fetch
         $ApcKey= $this->GetKey($Key);
         $Result= apc_fetch($ApcKey, $Success);
-        if ($Result===false || !$Success) {
+        if ($Result === false || !$Success) {
             return null;
         }
         // check index
@@ -103,12 +116,12 @@ class CacheApcDriver extends AbstractDriver {
 
     protected function GetIndex($Index=null) {
         // get list of tags
-        if ($Index===null) {
-            return ($Dump= apc_fetch($this->GetOption('APC_ID').'-INDEX'))
+        if ($Index === null) {
+            return ($Dump= apc_fetch($this->APC_ID.'-INDEX'))
                 ? @unserialize($Dump)
                 : array('Index'=>array(), 'SubIndexes'=>array());
         } else {
-            $SubIndexKey= $this->GetOption('APC_ID').'-TAG:'.$Index;
+            $SubIndexKey= $this->APC_ID.'-TAG:'.$Index;
             return ($Dump= apc_fetch($SubIndexKey))
                 ? @unserialize($Dump)
                 : array();
@@ -118,9 +131,9 @@ class CacheApcDriver extends AbstractDriver {
 
     protected function StoreIndex($Content, $Index=null) {
         // save list of tags
-        $Key= ($Index===null)
-            ? $this->GetOption('APC_ID').'-INDEX'
-            : $this->GetOption('APC_ID').'-TAG:'.$Index;
+        $Key= ($Index === null)
+            ? $this->APC_ID.'-INDEX'
+            : $this->APC_ID.'-TAG:'.$Index;
         apc_store($Key, serialize($Content), $this->GetOption('Expire'));
     }
 
@@ -203,8 +216,6 @@ class CacheApcDriver extends AbstractDriver {
     protected function GetMicrotime($Offset=0) {
 
         return sprintf("%01.6f", microtime(true) + $Offset);
-        //list($usec, $sec) = explode(" ", microtime());
-        //return $sec.':'.substr($usec,2,6);
     }
 
 }

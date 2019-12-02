@@ -10,25 +10,39 @@
 
 /*
  * Simple logger system, portable, independent of other AccentPHP classes.
+ * This class is not descendant of Component class in order to be operative as early as possible.
  */
 
 
 class TLogger {
 
-
+    // permition to work
     protected $Enabled;
 
-    protected $LoggerFile= false;// as string to specify path of log file
-                                // as boolean true to keep logs in memory
+    // as string to specify path of log file
+    // as boolean true to keep logs in memory
+    protected $LoggerFile= false;
 
+    // buffer of logged data
     protected $Data;
+
+    // content of log header,
+    // in case of persistent log it will be stored before each session
     protected $FileHeader;
-    protected $FileCaption;
+
+    // width of each column (in chars)
     protected $ColumnWidths;
+
+    // alignemnt of each column (as STR_PAD_LEFT, STR_PAD_RIGHT, STR_PAD_BOTH)
     protected $ColumnAligns;
 
+    // chosen utf8 solution
     protected $UtfEngine;
+
+    // content of top of log file, not alterable via constructor
     protected $StdReportFileHeader= "<?php __halt_compiler();\n\n";
+
+    // content of divider
     protected $FileSeparatorLine;
 
 
@@ -39,15 +53,17 @@ class TLogger {
      * @param string $Caption  main title of report file
      * @param array $Columns  titles of columns, '|' char is multiline separator
      * @param bool $Enabled  permition
-     * @param bool $Overwrite  whether to overwrite log file on start ot not
+     * @param bool $Overwrite  whether to overwrite log file on start or not
      */
     public function __construct($LogFile, $Caption= '', $Columns=array(), $Enabled=true, $Overwrite=true) {
 
         $this->SetupUTF();
         $this->BuildHeader($Caption, $Columns);
         $this->Enabled= $Enabled;
+        $this->LogData= array();
+
         if (is_string($LogFile)) {
-            // secure output file extension
+            // ensure output file extension
             touch($LogFile.'.php');
             $this->LoggerFile= realpath($LogFile.'.php');
             // clear file
@@ -59,11 +75,15 @@ class TLogger {
             // in-memory log
             $this->LoggerFile= $LogFile;
         }
-        $this->LogData= array();
     }
 
 
-
+    /**
+     * Prepare content of log header.
+     *
+     * @param array $Caption  labels of table columns
+     * @param array $Columns  definitions of table columns
+     */
     protected function BuildHeader($Caption, $Columns) {
 
         $this->ColumnAligns= array();
@@ -172,6 +192,12 @@ class TLogger {
     }
 
 
+    /**
+     * Format supplied data into string as table-row.
+     *
+     * @param array $Data
+     * @return string
+     */
     protected function FormatFileLine($Data) {
 
         foreach($Data as &$Item) {
@@ -232,10 +258,10 @@ class TLogger {
 
     protected function UtfStrLen($String) {
 
-		if ($this->UtfEngine=='mbstring') {
+		if ($this->UtfEngine === 'mbstring') {
 			return mb_strlen($String, 'UTF-8');
 		}
-		if ($this->UtfEngine=='iconv') {
+		if ($this->UtfEngine === 'iconv') {
 			return iconv_strlen($String, 'UTF-8');
     	}
    		return strlen(preg_replace("/[\x80-\xBF]/", '', $String));
@@ -246,17 +272,19 @@ class TLogger {
 
         static $PCREUTF= null;
 
-        if ($this->UtfEngine=='mbstring') {
-	        if ($Length===null) $Length= mb_strlen($String);
+        if ($this->UtfEngine === 'mbstring') {
+	        if ($Length === null) {
+                $Length= mb_strlen($String);
+            }
 	        return mb_substr($String, $Start, $Length, 'UTF-8');
 	    }
-	    if ($this->Engine=='iconv') {
-	        if ($Length==null)	{
+	    if ($this->Engine === 'iconv') {
+	        if ($Length === null)	{
 	            return iconv_substr($String, $Start, $this->strlen($String), 'UTF-8');
 	        }
 	        return iconv_substr($String, $Start, $Length, 'UTF-8');
 	    }
-        if ($PCREUTF===null) {
+        if ($PCREUTF === null) {
             $PCREUTF= @preg_match( '//u', '' );
         }
         if ($PCREUTF) {
@@ -272,8 +300,8 @@ class TLogger {
 
         while($this->UtfStrLen($String) < $Length) {
             switch ($Direction) {
-                case STR_PAD_BOTH: $String= " $String ";
-                case STR_PAD_LEFT: $String= " $String";
+                case STR_PAD_BOTH: $String= " $String "; break;
+                case STR_PAD_LEFT: $String= " $String"; break;
                 default: $String .= ' ';
             }
         }
@@ -286,21 +314,21 @@ class TLogger {
         static $PCREUTF= null;
 
         $Result= array();
-        if ($this->UtfEngine=='mbstring') {
+        if ($this->UtfEngine === 'mbstring') {
             $StrLength= mb_strlen($String);
             for($x=0; $x<$StrLength; $x=$x+$ChunkLength) {
                 $Result[]= mb_substr($String, $x, $ChunkLength);
             }
             return $Result;
         }
-        if ($this->UtfEngine=='iconv') {
+        if ($this->UtfEngine === 'iconv') {
             $StrLength= iconv_strlen($String);
             for($x=0; $x<$StrLength; $x=$x+$ChunkLength) {
                 $Result[]= iconv_substr($String, $x, $ChunkLength);
             }
             return $Result;
         }
-        if ($PCREUTF===null) {
+        if ($PCREUTF === null) {
             $PCREUTF= @preg_match( '//u', '' );
         }
         if ($PCREUTF) {

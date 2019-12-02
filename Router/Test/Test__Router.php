@@ -81,7 +81,7 @@ class Test__Router extends AccentTestCase {
 
     public function On_TestGetAndSetRoutes_LoadRoutesEventListener($Event) {
 
-        $Collection= $Event->GetOption('Routes');
+        $Collection= $Event->GetRoutesCollection();
         $Collection->AddRoutes($this->DemoRoutesDefinition);
     }
 
@@ -141,7 +141,7 @@ class Test__Router extends AccentTestCase {
         $this->EventExecutionCount++;
 
         // insert routes
-        $Collection= $Event->GetOption('Routes');
+        $Collection= $Event->GetRoutesCollection();
         $Collection->AddRoutes($this->DemoRoutesDefinition);
     }
 

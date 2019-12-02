@@ -13,9 +13,10 @@
  */
 
 use Accent\Security\RBAC\DataProvider\AbstractDataProvider;
+use Accent\AccentCore\Component;
 
 
-class RBAC extends AbstractDataProvider {
+class RBAC extends Component {
 
 
     protected static $DefaultOptions= array(
@@ -105,13 +106,13 @@ class RBAC extends AbstractDataProvider {
      * Create new role.
      *
      * @param string $RoleName
-     * @param string $Description
+     * @param array $Properties
      * @param array $Inherits
      * @return mixed  Id of new role
      */
-    public function CreateRole($RoleName, $Description='', $Inherits=array()) {
+    public function CreateRole($RoleName, $Properties=[], $Inherits=[]) {
 
-        return $this->DataProvider->CreateRole($RoleName, $Description, $Inherits);
+        return $this->DataProvider->CreateRole($RoleName, $Properties, $Inherits);
     }
 
 

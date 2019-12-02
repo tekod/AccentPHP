@@ -2,35 +2,49 @@
 
 /**
  * Rich variable dumper.
+ * Note: this method will echo content, not return it.
  *
- * @param mixed $Value
- * @param sting $Caption
- * @param bool $FormatingValue
+ * @param mixed $Value  arbitrary value that need to be formatted
+ * @param sting $Caption  caption/title/lable to be echoed above formatted value
+ * @param bool $FormatingValue  internal, whether to format value or just to echo it
+ * @return false|string  false if session is not authorized or string with type of value
  */
 function d($Value, $Caption='', $FormatingValue=true) {
 
+    // get debugger
+    $Debug= \Accent\AccentCore\Debug\Debug::Instance('d-dump', array(
+        'AuthKey'=>false,       // forbid this session if instance is just created
+    ));
+    if (!$Debug->IsAuthorizedSession()) {
+        // authorization fail, do not echo anything
+        return false;
+    }
+
     // convert value to human friendly format
     if ($FormatingValue) {
-        require_once 'Debug.php';
-        $Debug= new \Accent\AccentCore\Debug\Debug;
         $Dump= trim($Debug->VarDump($Value, 1));
     } else {
         $Dump= strval($Value);
     }
+
     // prepare call-stack
     $CallStack = debug_backtrace();
     $Hdr= '';
     foreach($CallStack as $i=>$Trace) {
         $Where= (isset($Trace['file'])) ? basename($Trace['file']) : "unknown file";
         $Where .= (isset($Trace['line'])) ? "[$Trace[line]]" : "[?]";
-        $Hdr= $Where.($i > 0 ? ' -> ' : '').$Hdr;
+        $Hdr= $Where.($i > 0 ? ' &rarr; ' : '').$Hdr;
     }
+
     // pack HTML and echo it
     echo '
-      <pre style="display:block; position:relative; overflow:hidden; background-color:#023; color:#bcd; margin:6px 0; padding:1.5em 1em .6em 2em; font:normal 10px sans-serif">'
-        .'<div style="position:absolute; top:1px; right:0; min-width:100%; font:bold 10px sans-serif; color:#888; white-space:nowrap;">'.$Hdr.'</div>'
+      <pre style="display:block; position:relative; overflow:hidden; background-color:#002840; color:#bcd; margin:6px 0; padding:1.5em 1em .6em 2em; font:normal 10px sans-serif">'
+        .'<div style="position:absolute; top:1px; right:0; min-width:100%; font:normal 11px sans-serif; color:#aaa; white-space:nowrap;">'.$Hdr.'</div>'
         .($Caption === '' ? '' : '<b>'.$Caption.' : </b>')
         .$Dump.'</pre>';
+
+    // success, return string
+    return gettype($Value);
 }
 
 
@@ -62,6 +76,23 @@ function d_hex($Value, $Caption='') {
     d($Dump, $Caption, false);
 }
 
+
+/**
+ * Initialize instance of debugger for usage with "d()" function.
+ * Its main task is to inject authorization key into debugger.
+ *
+ * @param string $AuthKey  random alpha-num string, minimum 10 chars long
+ */
+function d_initialize($AuthKey) {
+
+    // load class, just in case that autoload not working yet
+    require_once 'Debug.php';
+
+    // create instance of debugger
+    \Accent\AccentCore\Debug\Debug::Instance('d-dump', array(
+        'AuthKey'=>$AuthKey,
+    ));
+}
 
 
 
