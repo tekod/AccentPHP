@@ -82,15 +82,17 @@ function d_hex($Value, $Caption='') {
  * Its main task is to inject authorization key into debugger.
  *
  * @param string $AuthKey  random alpha-num string, minimum 10 chars long
+ * @param string $CookieName  name of cookie (optional)
  */
-function d_initialize($AuthKey) {
+function d_initialize($AuthKey, $CookieName='AccentDebugKey') {
 
     // load class, just in case that autoload not working yet
     require_once 'Debug.php';
 
     // create instance of debugger
     \Accent\AccentCore\Debug\Debug::Instance('d-dump', array(
-        'AuthKey'=>$AuthKey,
+        'AuthKey'=> $AuthKey,
+        'CookieName'=> $CookieName,
     ));
 }
 

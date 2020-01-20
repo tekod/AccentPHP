@@ -6,6 +6,8 @@ use Accent\AccentCore\Event\EventService;
 
 /**
  * Testing Event component
+ *
+ * @TODO: test $ReturnEvent param in Event->Execute
  */
 
 class Test__Event extends AccentTestCase {
@@ -33,9 +35,9 @@ class Test__Event extends AccentTestCase {
     // will test attaching as dynamic callable,
     // will test using execution context vaues,
     // will test SetHandled feature.
-    public function DemoListener_A($Event, $Context) {
+    public function DemoListener_A($Event) {
 
-        $EventName= $Context['EventName'];
+        $EventName= $Event->EventName;
         $Subject= $Event->GetSubject();
 
         // prepend event name to subject
@@ -49,7 +51,7 @@ class Test__Event extends AccentTestCase {
     // Demo listener B,
     // will test attaching & calling as static method,
     // also will test returning true.
-    public static function DemoListener_B($Event, $Context) {
+    public static function DemoListener_B($Event) {
 
         // increment counter
         // pinging must NOT be conditioned by counter

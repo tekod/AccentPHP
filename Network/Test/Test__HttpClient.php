@@ -194,16 +194,20 @@ class Test__HttpClient extends AccentTestCase {
         $this->assertTrue($Success);
         $this->assertEqual($Client->GetReceivedBody(), '(OK)');
         $Cookies= $Client->GetCookieCollection();
+        $Cookies->Remove('AccentTestPass'); // remove auth cookie if transfered
         $this->assertEqual($Cookies->Count(), 2);
         $this->assertEqual($Cookies->GetAllKeys(), array('AccentHttpClientTest1','AccentHttpClientTest2'));
+
         // step 2: send new request, this time these two cookies will be part of request
         $Success= $Client->GET("$URL&Step=2", array(
             'AcceptCookies'=> true,
         ));
         $this->assertTrue($Success);
         $this->assertEqual($Client->GetReceivedBody(), '(OK)');
+        $Cookies->Remove('AccentTestPass'); // remove auth cookie if transfered
         $this->assertEqual($Cookies->Count(), 1);  // receiver sent instruction to delete one cookie
         $this->assertEqual($Cookies->Get('AccentHttpClientTest2'), 'Boeing');
+        
         // step 3: send new request, receiver must confirm that only one cookie left
         $Success= $Client->GET("$URL&Step=3", array(
             'AcceptCookies'=> true,

@@ -281,7 +281,7 @@ class Worker extends Component {
 
         // notify listeners to register all job handlers
         $Event= new WorkerEvent(['Worker'=>$this]);
-        $this->EventDispatch('Queue.RegisterHandlers', $Event);
+        $this->EventDispatch('Queue.Worker.RegisterHandlers', $Event);
 
         // start infinite loop
         do {

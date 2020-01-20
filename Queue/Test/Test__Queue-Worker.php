@@ -4,7 +4,6 @@
  * Testing Accent\Queue\Worker
  */
 
-use Accent\AccentCore\Event\Event;
 use Accent\Test\AccentTestCase;
 
 
@@ -246,7 +245,7 @@ class Test__Queue_Worker extends AccentTestCase {
         $Dump= file_get_contents(__DIR__.'/tmp/log.txt');
         $this->assertTrue(strpos($Dump, '"t": ok.') !== false);
         $this->assertTrue(strpos($Dump, '"x"') === false);
-        
+
         // clear playground
         (new \Accent\AccentCore\File\File)->DirectoryClear( __DIR__.'/tmp');
     }

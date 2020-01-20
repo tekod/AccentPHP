@@ -96,8 +96,8 @@ class Debug {
         $this->CookieName= $Options['CookieName'];
 
         // if AuthKey is string allow user to set cookie value via GET
-        if (strlen($this->AuthKey) > 10 && isset($_GET[$this->CookieName]) && $_GET[$this->CookieName] === $this->AuthKey) {
-            setcookie($this->CookieName, $_GET[$this->CookieName]);
+        if (strlen($this->AuthKey) >= 10 && isset($_GET[$this->CookieName]) && $_GET[$this->CookieName] === $this->AuthKey) {
+            setcookie($this->CookieName, $_GET[$this->CookieName], time()+86400*365, '/');
             // make it valid for current request
             $_COOKIE[$this->CookieName]= $_GET[$this->CookieName];
         }
@@ -134,6 +134,7 @@ class Debug {
         if (is_bool($this->AuthKey)) {
             return $this->AuthKey;
         }
+
         return $this->AuthKeyFromCookie === $this->AuthKey;
     }
 
@@ -440,14 +441,10 @@ class Debug {
                 $Cast= (array)$VarValue;
                 $List= array();
                 foreach($Cast as $k=>$v) {
-                    if (substr($k,0,3) ==="\x00\x2A\x00") { // remove marker 'protected'
+                    if (substr($k,0,3) === "\x00\x2A\x00") { // remove marker 'protected'
                         $k= substr($k,3);
                     }
-                    if ($k{0}==="\x00") { // remove marker 'private'
-                        $k= substr($k, 1);
-                        $List[]= sprintf($KeyValueFormat,
-                            $AsHTML ? htmlentities($k) : $k,
-                            $AsHTML ? '<b>&lt;private&gt;</b>' : '<private>');
+                    if ($k{0} === "\x00") { // skip 'private' properties
                         continue;
                     }
                     $List[]= sprintf($KeyValueFormat,

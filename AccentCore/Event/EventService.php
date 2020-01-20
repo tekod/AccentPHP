@@ -97,10 +97,11 @@ class EventService extends Component {
      *
      * @param string $EventName  identifier of event
      * @param BaseEvent|array $EventObject  instance of event object or array of it options
+     * @param bool $ReturnEvent  whether to return event object instead of execution status
      * @param array $ExtraListeners  list of additional callables to execute
      * @return bool  indication was any listener terminate execution loop
      */
-    public function Execute($EventName, $EventObject=null, $ExtraListeners=array()) {
+    public function Execute($EventName, $EventObject=null, $ReturnEvent=false, $ExtraListeners=array()) {
 
         // if event object is omitted - instantiate BaseEVent without options
         if ($EventObject === null) {
@@ -109,19 +110,22 @@ class EventService extends Component {
 
         // if event object is specified as array - instantiate BaseEvent with that options
         if (is_array($EventObject)) {
-            $EventObject= new BaseEvent($EventObject);
+            $EventObject= new BaseEvent($EventObject + $this->GetCommonOptions());
         }
 
         // find list of listeners
         $Listeners= array_merge($ExtraListeners, $this->GetListeners($EventName));
         $this->TraceDebug('Event "'.$EventName.'" ('.count($Listeners).' listeners found).');
 
+        // set EventName property
+        $EventObject->EventName= $EventName;
+        /*
         // set execution context
         $EventObject->SetContext(array(
             'EventName'   => $EventName,                // listeners can be attached using wildcard
             'EventService'=> $this,                     // allowing listeners to call other events
             'App'         => $this->GetOption('App'),   // allowing listeners to access application
-        ));
+        ));*/
 
         // loop
   	    foreach($Listeners as $Listener) {
@@ -132,12 +136,12 @@ class EventService extends Component {
             // terminate loop if listener returns true
             if ($Result === true) {
                 $this->TraceDebug('Event "'.$EventName.'" terminated!');
-                return true;
+                return $ReturnEvent ? $EventObject : true;
             }
 	   }
 
        // not handled
-	   return false;
+	   return $ReturnEvent ? $EventObject : false;
     }
 
 

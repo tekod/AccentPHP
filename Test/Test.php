@@ -18,8 +18,11 @@ ini_set('display_errors', 'On');
 date_default_timezone_set('UTC');
 define('NOW', time());
 
-// loading mandatory files
+// load debug functions
 require __DIR__.'/../AccentCore/Debug/Functions.php';
+d_initialize(ACCENTTEST_PASSWORD, 'AccentTestPass');
+
+// load model
 require __DIR__.'/TestModel.php';
 $Model= new \AccentTestModel();
 
@@ -60,11 +63,24 @@ if (isset($_GET['Act']) && $_GET['Act'] === 'Forward') {
 // create list of tests
 $Groups= array();
 foreach($Model->GetAllTests() as $TestFile) {
-    $Group= $TestFile[2];
+    // analyze grouping info
+    $Record= array_map('trim', explode(':', $TestFile[2]));
+    $Group= $Record[0];
+    $Order= isset($Record[1]) ? $Record[1] : null;
+    // intitialize new group
     if (!isset($Groups[$Group])) {
         $Groups[$Group]= array();
     }
-    $Groups[$Group][]= $TestFile;
+    // prevent accidentally overwrite existing test item
+    if (isset($Groups[$Group][$Order])) {
+        $Order= null;  // remove index, just append to list
+    }
+    // add to group
+    if ($Order) {
+        $Groups[$Group][$Order]= $TestFile;
+    } else {
+        $Groups[$Group][]= $TestFile;
+    }
 }
 
 
@@ -148,6 +164,7 @@ foreach($Model->GetAllTests() as $TestFile) {
                 </div>
                 <ul>
                 <?php
+                    ksort($GroupItems);
                     foreach ($GroupItems as $ItemName=>$ItemStruct) {
                 ?>
                     <li>

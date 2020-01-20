@@ -24,9 +24,9 @@ class AccentTestModel {
      */
     public function Handle($Tests) {
 
-        // turn-off 'E_DEPRECATED'
+        // turn-off notification 'E_DEPRECATED'
 		if (defined('E_DEPRECATED')) {
-    		error_reporting(E_ALL & ~E_STRICT & ~E_DEPRECATED);
+    		//error_reporting(E_ALL & ~E_STRICT & ~E_DEPRECATED);
         }
 
         $Totals= array(0,0,0);
@@ -159,13 +159,18 @@ class AccentTestModel {
      */
     protected function RunTest($Class) {
 
-    	// run simpletest
     	ob_start();
+        $Obj= new $Class();
+
+        // execute simpletest
     	$Test= new TestSuite('AccentPHP test');
         $Reporter= new Accent_TestReporter('UTF-8');
-        $Obj= new $Class();
         $Test->add($Obj);
     	$Test->run($Reporter);
+
+        // finalization tasks
+        $Obj->End();
+
 		// return results
 		return array(
             'Caption'=> $Obj->GetTestCaption(),
@@ -189,15 +194,20 @@ class AccentTestModel {
         $Files= $this->ReadDirs($SearchRoot);
         foreach($Files as $File) {
             $Dump= file_get_contents($SearchRoot.'/'.$File);
+            // find caption
             preg_match('#\s*const\s+TEST_CAPTION\s*=\s*\'(.*)\'\s*;\s#', $Dump, $matches);
             $Caption= isset($matches[1]) ? $matches[1] : '';
+            // find group
             preg_match('#\s*const\s+TEST_GROUP\s*=\s*\'(.*)\'\s*;\s#', $Dump, $matches);
             $Group= isset($matches[1]) ? $matches[1] : '';
-            if ($Caption !== '' && $Group !== '') {
-                $Tests[]= array($File, $Caption, $Group);
+            // validation
+            if ($Caption === '' || $Group === '') {
+                continue;
             }
+            // add to list
+            $Tests[]= array($File, $Caption, $Group);
         }
-        // return
+        // return list
         return $Tests;
     }
 

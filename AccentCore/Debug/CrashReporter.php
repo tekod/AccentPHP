@@ -22,11 +22,13 @@
  *
  * Additionally collector will call user defined callback to let application chance
  * to provide more usefull informations.
- * Typically via callback application returns:
+ * Typically via callback application will return:
  *   - id of logged user
  *   - tags (for search)
  *   - sender (name of site/application, usefull for search in centralized message storage)
  *   - version of application (usefull for search in centralized message storage)
+ *
+ * Finally, collector will dispatch "CrashReporterCollector" event to gather more info from listeners.
  *
  * Writer has following built-in means for sending informations:
  *  - log file - will store report by appending "log" file in local filesystem
@@ -45,8 +47,8 @@
  *
  * Seems that there is no way to capture debug_backtrace data during fatal error event.
  *
- * TODO: implement some kind of throttler to prevent email flood, currently I have no
- * good solution where to store timestamp of last sending and preserve portability.
+ * TODO: implement some kind of throttler to prevent email flood,
+ * currently I have no good solution where to store timestamp of last sending and preserve portability.
  *
  * Usage example:
  *   $CR= new CrashReporter(
@@ -57,8 +59,8 @@
 
 
 use Accent\AccentCore\Component;
+use Accent\AccentCore\ArrayUtils\Collection;
 use Accent\AccentCore\Debug\Debug;
-use Accent\AccentCore\File\File;
 
 
 class CrashReporter extends Component {
@@ -69,6 +71,9 @@ class CrashReporter extends Component {
         // initial state of component
         'Enabled'=> true,
 
+        // user defined callback as provider of additional informations
+        'CollectorCallback'=> null,
+
         // single writer as string or array of writers, defined as:
         //  - "LogFile:FullPathToFileLocation"
         //  - "Email:SimpleEmailAddress" multiple addresses can be specified as comma-separated
@@ -76,11 +81,18 @@ class CrashReporter extends Component {
         //  - "Callable:Class:Method" or array('Class','Method') or Closure
         'Writer'=> null,
 
-        // user defined callback as provider of additional informations
-        'Callback'=> null,
-
         // version of component
-        'Version'=> '0.2',
+        'Version'=> '0.3',
+
+        // this will suppress some non-testable functions to perform
+        // (sending email for example) and simulate them
+        // set to string with full path to log file to store simulated data
+        'Testing'=> false,
+
+        // servicess
+        'Services'=> array(
+            // 'Event'=> 'Event',  // must be specified in order to dispatch events
+        ),
     );
 
     // internal properties
@@ -92,18 +104,17 @@ class CrashReporter extends Component {
     /**
      * Constructor.
      */
-    public function __construct($Options) {
+    public function __construct($Options=array()) {
 
         // call ancestor
         parent::__construct($Options);
 
-        // export 'Writer' to local property
-        $this->Writers= $this->GetOption('Writer');
-
-        // ensure array type, also push callable array deeper
-        if (!is_array($this->Writers) || is_callable($this->Writers)) {
-            $this->Writers= array($this->Writers);
+        // make collection from 'Writer' option
+        $Writers= $this->GetOption('Writer');
+        if (!is_array($Writers) || is_callable($Writers)) {
+            $Writers= array($Writers); // ensure array type, also push callable array deeper
         }
+        $this->Writers= new Collection($Writers);
 
         // export 'Enabled' to local property
         $this->Enabled= $this->GetOption('Enabled');
@@ -133,15 +144,15 @@ class CrashReporter extends Component {
 
 
     /**
-     * Append additional writer to collection of writer.
+     * Append additional writer to collection of writers.
      * Callable defined as array will receive single parameter $Data.
      * Callable defined as string will receive 'remanding part after ":"' and $Data
      *
-     * @param callable $Writter
+     * @param callable $Writer
      */
-    public function AddWriter($Writter) {
+    public function AddWriter($Writer) {
 
-        $this->Writers[]= $Writter;
+        $this->Writers->Append($Writer);
     }
 
 
@@ -205,8 +216,17 @@ class CrashReporter extends Component {
      */
     protected function Collect($Error) {
 
-        return $this->GetData($Error)
-             + $this->GetFromCallback();
+        // collect data
+        $Data= $this->GetData($Error);
+
+        // add data from callback
+        $Data += $this->GetFromCollectorCallback($Data);
+
+        // ask listeners do append their data
+        $Data= $this->GetFromEventListeners($Data);
+
+        // return all
+        return $Data;
     }
 
 
@@ -219,7 +239,7 @@ class CrashReporter extends Component {
     protected function GetData($Error) {
 
         $Context= $this->GetRequestContext();
-        return array(
+        $Data= array(
             'FatalError'=> "\n  $Error[message]\n  in file: $Error[file]\n  on line: $Error[line]",
             'Timestamp' => "\n  ".date('r'),
             //'CallStack' => $this->RenderCallStack(),
@@ -228,31 +248,53 @@ class CrashReporter extends Component {
             '$_COOKIE'  => $this->VarDump($Context->COOKIE),
             '$_ENV'     => $this->VarDump($Context->ENV),
         );
+
+        if ($this->GetOption('Testing')) {
+            $Data['Testing']= $this->GetOption('Testing');
+        }
+
+        return $Data;
     }
 
 
     /**
      * Get informations provided by developer's callback listener.
      *
+     * @param array $Data  collected information about fatal error
      * @return array
      */
-    protected function GetFromCallback() {
+    protected function GetFromCollectorCallback($Data) {
 
         // get user defined callback function
-        $Callback= $this->GetOption('Callback');
+        $Callback= $this->ResolveCallable($this->GetOption('CollectorCallback'));
 
-        // is specified?
+        // is valid?
         if (!is_callable($Callback)) {
             return array();
         }
 
         // call user-defined function
-        $Result= $Callback();
+        $Result= $Callback(['Data'=> $Data] + $this->GetCommonOptions());
 
         // return array
         return is_array($Result)
             ? $Result
-            : array('ERROR'=>'Callback did not return array value!');
+            : array('ERROR'=> 'Callback did not return array value!');
+    }
+
+
+    /**
+     * Ask listeners for event "CrashReporterCollector" to add their info.
+     *
+     * @param array $Data
+     * @return array
+     */
+    protected function GetFromEventListeners($Data) {
+
+        if (!$this->HasService('Event')) {
+            return $Data;
+        }
+        return $this->EventDispatch('CrashReporterCollector', $Data, true)->GetAllData();
     }
 
 
@@ -263,6 +305,10 @@ class CrashReporter extends Component {
      */
     protected function Write($Data) {
 
+        // dispatch event, listeners can execute its own writers
+        //  or modify $this->Writer in order to prevent default logging
+        $this->CallWriteEventListeners($Data);
+
         // run all writers
         foreach ($this->Writers as $Writer) {
 
@@ -271,20 +317,47 @@ class CrashReporter extends Component {
                 continue;
             }
 
+            // unpack callable
+            $Writer= $this->ResolveCallable($Writer);
+
             // is it simple string, like "method:parameters" ?
+            // resolve it as local method (prepended with "WriteTo"), example: "LogFile:/var/log/fatal-log.php"
             if (is_string($Writer)) {
-                $Parts= explode(':', $Writer, 2); // example: "LogFile:/var/log/fatal-log.php"
+                $Parts= explode(':', $Writer, 2);
                 $Method= 'WriteTo'.ucfirst($Parts[0]);
                 $this->$Method($Parts[1], $Data);
+                continue;
             }
 
-            // is it callback (array or closure) ?
+            // for callable specified as 3-items array pass 3rd element as parameter
+            // 3rd param can be anything, scalar, array, object
+            if (is_array($Writer) && isset($Writer[2])) {
+                $Param= array_pop($Writer);
+                $Writer($Param, $Data);
+                continue;
+            }
+
+            // for other types of callable invoke it with single param
             if (is_callable($Writer)) {
                 $Writer($Data);
             }
         }
     }
 
+
+    /**
+     * Enable event listeners to perform some jobs on writing.
+     *
+     * @param array $Data
+     */
+    protected function CallWriteEventListeners($Data) {
+
+        $this->EventDispatch('CrashReporterWriter', array(
+            'CollectedData' => $Data,           // $Data is immutable here
+            'Writers'       => $this->Writers,  // modify default writers
+            'CrashReporter' => $this,           // to use public helpers
+        ));
+    }
 
 
     //-----------------------------------------------------------------
@@ -353,7 +426,15 @@ class CrashReporter extends Component {
         // few headers
         $Headers= "From: $From\r\nReply-To: $From\r\nReturn-Path: $From";
 
-        // launch mail
+        // simulate email for testing envirnoment
+        if (isset($Data['Testing'])) {
+            $Dump= var_export(compact('To','Subject','Body','Headers'), true);
+            $Dump= "\n\n=====================================\nWriteToEmail (simulation):$Dump";
+            file_put_contents($Data['Testing'], $Dump, FILE_APPEND);
+            return;
+        }
+
+        // send email
         mail($To, $Subject, $Body, $Headers);
     }
 
@@ -367,13 +448,18 @@ class CrashReporter extends Component {
      */
     protected function WriteToURL($Para, $Data) {
 
-        // use utilities from File component
-        $File= new File();
-
-        $File->LoadWithSocket($Para, array(
-            'Method'=> 'POST',
-            'PostPara'=> array('CrashData'=>json_encode($Data, JSON_UNESCAPED_UNICODE)),
+        // prepare context
+        $Context= stream_context_create(array(
+            'http'=> array(
+                'method'        => 'POST',
+                'header'        => 'Content-type: application/json',
+                'content'       => json_encode($Data, JSON_UNESCAPED_UNICODE),
+                'ignore_errors' => true,
+            )
         ));
+
+        // send http request
+        file_get_contents($Para, false, $Context);
     }
 
 
@@ -408,8 +494,8 @@ class CrashReporter extends Component {
     /**
      * Helper, pack array to nice formatted text.
      */
-    protected function RenderPlainData($Data) {
-
+    public function RenderPlainData($Data) {
+        // this method is made public to allow formatting from custom writers
         $Dump= '';
         foreach ($Data as $k => $v) {
             // put name of section in "[", "]" and prepend it with double new-line

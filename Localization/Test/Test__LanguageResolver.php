@@ -168,7 +168,7 @@ class Test__LanguageResolver extends AccentTestCase {
             'RequestContext'=> $Context,
         ));
         $Options['Services']['Event']->AttachListener('MyEventName', function($Event){
-            $Segments= explode('/', trim($Event->GetOption('ServerVars.REQUEST_URI'), '/'));
+            $Segments= explode('/', trim($Event->ServerVars['REQUEST_URI'], '/'));
             switch (reset($Segments)) {
                 case 'asia': $Event->SetLanguage('zn'); break;
                 case 'northamerica': $Event->SetLanguage('en'); break;
@@ -217,7 +217,7 @@ class Test__LanguageResolver extends AccentTestCase {
             'RequestContext'=> $Context,
         ));
         $Options['Services']['Event']->AttachListener('LangResolverForAdminPages', function($Event){
-            $Segments= explode('/', trim($Event->GetOption('ServerVars.REQUEST_URI'),'/'));
+            $Segments= explode('/', trim($Event->ServerVars['REQUEST_URI'],'/'));
             if ($Segments[0] === 'admin') {
                 $Event->SetLanguage('fr');
             }

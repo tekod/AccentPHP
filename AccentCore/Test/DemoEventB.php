@@ -20,7 +20,9 @@ class DemoEventB extends BaseEvent {
     public function __construct($Options=[]) {
 
         parent::__construct($Options);
-        $this->Counter= $this->GetOption('Counter', 0);
+
+        // extract property
+        $this->Counter= isset($this->Data['Counter']) ? $this->Data['Counter'] : 0;
     }
 
 

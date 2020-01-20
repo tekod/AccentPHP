@@ -52,10 +52,15 @@ class Job extends Component {
     protected $Released= false;
 
 
+    /**
+     * Constructor.
+     */
     public function __construct($Options) {
 
+        // call ancestor
         parent::__construct($Options);
 
+        // expose some options
         $this->Record= $this->GetOption('JobRecord');
         $this->Worker= $this->GetOption('Worker');
     }

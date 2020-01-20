@@ -17,7 +17,7 @@ class MockObject {
     protected $Mock_ErrorCallback;
 
 
-    public function __construct($ErrorCallback) {
+    public function __construct($ErrorCallback=null) {
 
         $this->Mock_ErrorCallback= $ErrorCallback;
     }

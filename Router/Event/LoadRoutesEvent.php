@@ -6,22 +6,14 @@ use Accent\AccentCore\Event\BaseEvent;
 class LoadRoutesEvent extends BaseEvent {
 
 
-    // default options
-    protected static $DefaultOptions= [
-
-        // collection (RouteGroup)
-        'Routes'   => null,
-    ];
-
-
     /**
      * Getter.
      *
-     * @return mixed
+     * @return Accent\Router\RouteGroup
      */
     public function GetRoutesCollection() {
 
-        return $this->GetOption('Routes');
+        return $this->Data['Routes'];
     }
 
 }

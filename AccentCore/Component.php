@@ -195,7 +195,7 @@ abstract class Component {
             $Array= array_shift($ArrayOfArrays); // extract first argument
             if (!is_array($Array)) {
                 $Msg= get_class($this).'.MergeOptions: Not an array argument.';
-                trigger_error($Msg, E_USER_WARNING); // ErrorProc is not prepared yet
+                $this->Error($Msg);
                 continue;
             }
             if (empty($Array)) {
@@ -463,7 +463,7 @@ abstract class Component {
             : array_diff_key($this->Options, array_flip($WithoutKeys));
     }
 
-    
+
 
     //-----------------------------------------------------------------
     //
@@ -784,9 +784,10 @@ abstract class Component {
      *
      * @param string $EventName  identifier of event
      * @param BaseEvent|array $EventObject  instance of event object or array of it options
+     * @param bool $ReturnEvent  whether to return event object instead of execution status
      * @return bool  indication was any listener terminate execution loop
      */
-    protected function EventDispatch($EventName, $EventObject=null) {
+    protected function EventDispatch($EventName, $EventObject=null, $ReturnEvent=false) {
 
         // get service
         $EventService= $this->GetService('Event');
@@ -809,7 +810,7 @@ abstract class Component {
         }
 
         // call service
-        return $EventService->Execute($EventName, $EventObject, $PluginListeners);
+        return $EventService->Execute($EventName, $EventObject, $ReturnEvent, $PluginListeners);
     }
 
 

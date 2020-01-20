@@ -4,10 +4,11 @@
 class DemoProcessor {
 
 
-    public function HandleTestWork($Job) {
+    public function HandleTestWork($Event) {
 
-        $Worker= $Job->GetWorker();
-        $JobRecord= $Job->GetRecord();
+        $Job= $Event->GetJob();
+        $Worker= $Event->GetWorker();
+        $JobRecord= $Event->GetRecord();
 
         // this method must not be called for other job names
         if ($JobRecord['JobName'] !== 'TestWork') {
@@ -41,16 +42,16 @@ class DemoProcessor {
         $Worker->Log('Job: unknown payload.');
     }
 
-    public function HandleWildcard($Job) {
+    public function HandleWildcard($Event) {
 
-        switch ($Job->GetRecord('JobName')) {
+        switch ($Event->GetRecord('JobName')) {
             //case 'UnusedName' : return $this->UnusedExecutioner($Para);
-            case 'SomeWeirdName': return $this->WeirdJobExecutioner($Job);
+            case 'SomeWeirdName': return $this->WeirdJobExecutioner($Event->GetJob());
         }
         return null;
     }
 
-    public function OnLoop($Job) {
+    public function OnLoop($Event) {
 
         if (is_file(__DIR__.'/tmp/log2.txt')) {
             return true;     // condition for terminating loop meet
@@ -58,7 +59,7 @@ class DemoProcessor {
         return false;
     }
 
-    public function WeirdJobExecutioner($Job) {
+    protected function WeirdJobExecutioner($Job) {
         //....  some work
         $Job->SetHandled();
     }

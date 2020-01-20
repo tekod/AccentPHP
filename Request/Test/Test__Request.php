@@ -294,7 +294,7 @@ class Test__Request extends AccentTestCase {
         $this->assertEqual($R->GetBody(), 'ABCDEFGH');   // uppercased
         // test custom decoder (replace existing decoder using event listener)
         $EventService= new \Accent\AccentCore\Event\EventService();
-        $EventService->AttachListener('Request.InitBodyDecoders', function($E){$E->GetOption('Collection')->Set('application/json', array($this,'BodyDecoderJson2'));});
+        $EventService->AttachListener('Request.InitBodyDecoders', function($E){$E->Collection->Set('application/json', array($this,'BodyDecoderJson2'));});
         PhpStream::$Body= '{"a":1,"b":"xyz"}';
         $R= $this->Build(array('Services'=>array('Event'=>$EventService)), array('SERVER'=>array('CONTENT_TYPE'=> 'application/json; charset=UTF-8')));
         $this->assertEqual($R->GetBody(), array('A'=>1, 'B'=>'XYZ')); // uppercased items

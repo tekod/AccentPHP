@@ -31,7 +31,7 @@ class AccentTestCase extends \UnitTestCase {
     protected $Autoloader;
     protected $ComponentDir;
     protected $TestCaseDB;
-
+    protected $CoverageCheckers;
 
     /**
      * Contructor.
@@ -44,6 +44,7 @@ class AccentTestCase extends \UnitTestCase {
         // setup some variables
         $Reflection= new \ReflectionClass($this);
         $this->ComponentDir= dirname(dirname($Reflection->getFileName())).'/';
+        $this->CoverageCheckers= [];
 
         // load service function and main class
         foreach($this->LoadFiles as $F) {
@@ -94,6 +95,16 @@ class AccentTestCase extends \UnitTestCase {
         if(!empty($this->ErrorCollection)) {
             $this->ShowErrors();
         }
+    }
+
+
+    /**
+     * Execute some tasks after testing each class.
+     */
+    public function End() {
+
+        // analyze coverage checkers
+        $this->AnalyzeCoverageCheckers();
     }
 
 
@@ -203,6 +214,55 @@ class AccentTestCase extends \UnitTestCase {
         }
         if ($Errors) {
             echo '<div style="background-color:#a20;color:#fff;line-height:2em;padding:2em;">Error: '.$Errors.'</div>';
+        }
+    }
+
+
+    /**
+     * Create and return coverage checker utility.
+     *
+     * @param string $Class  FQCN
+     * @param int $Depth  ignore methods from parents further then $Depth
+     * @param array $Ignore  list of methods that should not be monitored
+     * @return \Accent\Test\CoverageChecker
+     */
+    protected function RegisterCoverageChecker($Class, $Depth=99, $Ignore=[]) {
+
+        // build object
+        $Checker= new CoverageChecker($Class, $Depth, $Ignore);
+
+        // put it in roster
+        $this->CoverageCheckers[]= $Checker;
+
+        // return that object
+        return $Checker;
+    }
+
+
+    /**
+     * For each registered coverage checker calculate differences and dispatch warning if needed.
+     */
+    protected function AnalyzeCoverageCheckers() {
+
+        foreach($this->CoverageCheckers as $Checker) {
+
+            // get list of untested public methods
+            $Unchecked= $Checker->GetUnchecked();
+            if (!empty($Unchecked)) {
+                $this->WarningMessage(sprintf(
+                    'Class "%s" contains untested public methods: %s.',
+                    $Checker->GetClass(),
+                    '"'.implode('", "', $Unchecked).'"'));
+            }
+
+            // get list of unknown methods
+            $Misses= $Checker->GetMisses();
+            if (!empty($Misses)) {
+                $this->WarningMessage(sprintf(
+                    'These methods should not be tested in class "%s": %s.',
+                    $Checker->GetClass(),
+                    '"'.implode('", "', $Misses).'"'));
+            }
         }
     }
 

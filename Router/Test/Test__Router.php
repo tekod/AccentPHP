@@ -187,7 +187,7 @@ class Test__Router extends AccentTestCase {
     public function On_TestCaching_CollectRulesEventListener($Event) {
 
         // add new rule to collection
-        $Event->GetOption('Rules')->Set('Auth', __NAMESPACE__.'\\CustomRule');
+        $Event->Rules->Set('Auth', __NAMESPACE__.'\\CustomRule');
 
         // note that actual name of class does not need to match rule name
     }
