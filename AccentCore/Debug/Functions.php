@@ -29,22 +29,44 @@ function d($Value, $Caption='', $FormatingValue=true) {
 
     // prepare call-stack
     $CallStack = debug_backtrace();
-    $Hdr= '';
+    $ShortStackTrace= '';
     foreach($CallStack as $i=>$Trace) {
         $Where= (isset($Trace['file'])) ? basename($Trace['file']) : "unknown file";
         $Where .= (isset($Trace['line'])) ? "[$Trace[line]]" : "[?]";
-        $Hdr= $Where.($i > 0 ? ' &rarr; ' : '').$Hdr;
+        $ShortStackTrace= $Where.($i > 0 ? ' &rarr; ' : '').$ShortStackTrace;
     }
+    $DetailedStackTrace= \Accent\AccentCore\Debug\Debug::ShowSimplifiedStack([], 1);
 
     // pack HTML and echo it
     echo '
-      <pre style="display:block; position:relative; overflow:hidden; background-color:#002840; color:#bcd; margin:6px 0; padding:1.5em 1em .6em 2em; font:normal 10px sans-serif">'
-        .'<div style="position:absolute; top:1px; right:0; min-width:100%; font:normal 11px sans-serif; color:#aaa; white-space:nowrap;">'.$Hdr.'</div>'
+      <pre style="display:block; position:relative; background-color:#002840; color:#bcd; margin:6px 0; padding:1.5em 1em .6em 2em; font:normal 10px sans-serif; overflow-x:hidden">'
+        .'<div style="position:absolute; top:1px; right:3em; min-width:100%; font:normal 11px sans-serif; color:#aaa; white-space:nowrap;">'
+            .$ShortStackTrace
+            .'<div class="AccDbgVD" style="padding-left:3em; position:relative;">'
+                .'<abbr style="position:absolute; right:-2em; top:-1em; cursor:pointer;" onclick="this.className=this.className===\'AccDbgVDO\'?\'\':\'AccDbgVDO\'">[...]</abbr>'
+                .'<ul style="background-color:#124; border:1px solid gray; margin:-0.5em 0 0 1em; float:right; text-align:left;"><li>'.str_replace(["\n",'  '], ['</li><li>',' &nbsp; '], $DetailedStackTrace).'</li></ul>'
+            .'</div>'
+        .'</div>'
         .($Caption === '' ? '' : '<b>'.$Caption.' : </b>')
         .$Dump.'</pre>';
 
     // success, return string
     return gettype($Value);
+}
+
+
+/**
+ * Same as "d();" but also terminate execution if authorized.
+ *
+ * @param mixed $Value  arbitrary value that need to be formatted
+ * @param sting $Caption  caption/title/lable to be echoed above formatted value
+ * @param bool $FormatingValue  internal, whether to format value or just to echo it
+ */
+function d_d($Value, $Caption='', $FormatingValue=true) {
+
+    if (d($Value, $Caption, $FormatingValue)) {
+        die();
+    }
 }
 
 

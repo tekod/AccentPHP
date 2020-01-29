@@ -92,7 +92,7 @@ class Tracer extends Component {
             $RemovePrefixes= array(
                 $this->GetOption('Paths.AppDir'),
                 $this->GetOption('Paths.AccentDir'));
-            $Lines= $this->Debugger->ShowSimplifiedStack($RemovePrefixes);
+            $Lines= $this->Debugger->ShowSimplifiedStack($RemovePrefixes, 3);
             $Message .= "\n\nCall-stack:\n".$Lines."\n\n".str_repeat(' ', 200)."\n\n";
         }
 

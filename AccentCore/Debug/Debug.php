@@ -228,15 +228,13 @@ class Debug {
      *
      * @return string
      */
-    public static function ShowSimplifiedStack($RemovePrefixes=array()) {
+    public static function ShowSimplifiedStack($RemovePrefixes=array(), $SkipSteps=0) {
 
         $btOptions= defined('DEBUG_BACKTRACE_IGNORE_ARGS') ? DEBUG_BACKTRACE_IGNORE_ARGS : false;
         $CallStack = debug_backtrace($btOptions);
         $Lines= array();
+        $CallStack= array_slice($CallStack, $SkipSteps);
         foreach($CallStack as $k=>$v) {
-            if ($k < 3) {
-                continue;
-            }
             if (isset($v['file'])) {
                 $Where= $v['file'];
                 foreach($RemovePrefixes as $Prefix) {
@@ -247,14 +245,14 @@ class Debug {
                 }
                 $Where .= ":$v[line]";
                 if (isset($v['function'])) {
-                    $Where .= ' "'.$v['function'].'()"';
+                    $Where .= '  "'.$v['function'].'()"';
                 }
             } else if (isset($v['class']) && $v['type'] === '->') {
                 $Where= 'anonymous call to: '.substr($v['class'], strrpos($v['class'], '\\') + 1).'->'.$v['function'].'()';
             } else {
                 $Where= "unknown file";
             }
-            $Lines[]= '#'.($k-2).':'.$Where;
+            $Lines[]= '#'.($k+1).': '.$Where;
         }
         return implode("\n",$Lines);
     }

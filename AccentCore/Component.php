@@ -730,7 +730,7 @@ abstract class Component {
      *
      * @return \Accent\Application\Kernel
      */
-    protected function GetApp() {
+    public function GetApp() {
 
         return $this->GetOption('App');
     }

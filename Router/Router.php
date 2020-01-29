@@ -124,7 +124,7 @@ class Router extends Component {
             }
 
             // ... trigger event to allow listeners to add its routes
-            $Event= new LoadRoutesEvent(['Routes'=>$this->Routes]);
+            $Event= new LoadRoutesEvent(['Routes'=>$this->Routes]+$this->GetCommonOptions());
             $this->EventDispatch('Router.LoadRoutes', $Event);
         }
 
