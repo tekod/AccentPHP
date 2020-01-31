@@ -39,15 +39,15 @@ function d($Value, $Caption='', $FormatingValue=true) {
 
     // pack HTML and echo it
     echo '
-      <pre style="display:block; position:relative; background-color:#002840; color:#bcd; margin:6px 0; padding:1.5em 1em .6em 2em; font:normal 10px sans-serif; overflow-x:hidden">'
+      <pre class="AccDbgVD" style="display:block; position:relative; background-color:#002840; color:#bcd; margin:6px 0; padding:1.5em 1em .6em 2em; font:normal 10px sans-serif; overflow-x:hidden">'
         .'<div style="position:absolute; top:1px; right:3em; min-width:100%; font:normal 11px sans-serif; color:#aaa; white-space:nowrap;">'
             .$ShortStackTrace
-            .'<div class="AccDbgVD" style="padding-left:3em; position:relative;">'
-                .'<abbr style="position:absolute; right:-2em; top:-1em; cursor:pointer;" onclick="this.className=this.className===\'AccDbgVDO\'?\'\':\'AccDbgVDO\'">[...]</abbr>'
-                .'<ul style="background-color:#124; border:1px solid gray; margin:-0.5em 0 0 1em; float:right; text-align:left;"><li>'.str_replace(["\n",'  '], ['</li><li>',' &nbsp; '], $DetailedStackTrace).'</li></ul>'
-            .'</div>'
+            //.'<div class="AccDbgVD" style="padding-left:3em; position:relative;">'
+            //.'</div>'
         .'</div>'
-        .($Caption === '' ? '' : '<b>'.$Caption.' : </b>')
+        .'<abbr style="position:absolute; right:1em; top:0; cursor:pointer;" onclick="this.className=this.className===\'AccDbgVDO\'?\'\':\'AccDbgVDO\'">[...]</abbr>'
+        .'<ul style="background-color:#124; border:1px solid gray; float:right; font-size:14px;"><li>'.str_replace(["\n",'  '], ['</li><li>',' &nbsp; '], $DetailedStackTrace).'</li></ul>'
+        .($Caption === '' ? '' : '<b style="color:#8cf; font-size:13px">'.$Caption.' : </b>')
         .$Dump.'</pre>';
 
     // success, return string

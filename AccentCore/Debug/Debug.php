@@ -231,10 +231,10 @@ class Debug {
     public static function ShowSimplifiedStack($RemovePrefixes=array(), $SkipSteps=0) {
 
         $btOptions= defined('DEBUG_BACKTRACE_IGNORE_ARGS') ? DEBUG_BACKTRACE_IGNORE_ARGS : false;
-        $CallStack = debug_backtrace($btOptions);
-        $Lines= array();
+        $CallStack= debug_backtrace($btOptions);
         $CallStack= array_slice($CallStack, $SkipSteps);
-        foreach($CallStack as $k=>$v) {
+        $Lines= array();
+        foreach(array_reverse($CallStack) as $k=>$v) {
             if (isset($v['file'])) {
                 $Where= $v['file'];
                 foreach($RemovePrefixes as $Prefix) {
@@ -243,7 +243,7 @@ class Debug {
                         $Where= ltrim(substr($Where, $Len), '\\/ ');
                     }
                 }
-                $Where .= ":$v[line]";
+                $Where .= ": $v[line]";
                 if (isset($v['function'])) {
                     $Where .= '  "'.$v['function'].'()"';
                 }
