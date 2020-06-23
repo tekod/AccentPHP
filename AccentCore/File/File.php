@@ -116,8 +116,8 @@ class File {
 
     /**
      * Create temporary file and open it for writing.
-     * This method will search for random but guarantie unused filename in specified dir.
-     * If directory is null serching will be performed in "system temp directory".
+     * This method will search for random but guaranties unused filename in specified dir.
+     * If directory is null searching will be performed in "system temp directory".
      *
      * @param string $TempDir  full path to directory where file will be created
      * @return mixed filehandler or filepath
@@ -132,8 +132,8 @@ class File {
 
 
     /**
-     * Find gurantie unique filename in specified temp directory.
-     * If directory is null serching will be performed in "system temp directory".
+     * Find guarantied unique filename in specified temp directory.
+     * If directory is null searching will be performed in "system temp directory".
      *
      * @param string $TempDir  full path to directory where file will be created
      * @return string
@@ -195,7 +195,7 @@ class File {
 
     /**
      * Copy/Move file to other location.
-     * Missing directorins in path will be created.
+     * Missing directories in path will be created.
      *
      * @param string $FromPath
      * @param string $ToPath
@@ -316,8 +316,8 @@ class File {
 
 
     /**
-     * Copy/Move all files from directroy to another location.
-     * Function is recursive meaining it will affect files in subdirectories too.
+     * Copy/Move all files from directory to another location.
+     * Function is recursive meaning it will affect files in subdirectories too.
      *
      * @param string $FromDir
      * @param string $ToDir
@@ -433,7 +433,7 @@ class File {
 
     /**
      * Simply create list of files in target directory.
-     * Options is array of followin keys:
+     * Options is array of following keys:
      *   - 'Mask'=> '*',            // searching mask, like "*.jpg"
      *   - 'AllowFirstDot'=> true,  // this can hide files starting with dot
      *   - 'AllowDirs'=> false,     // allow directories to be listed in result
@@ -452,7 +452,7 @@ class File {
         if (!is_dir($Dir)) {
             return false;
         }
-        // avoid using "glob()" becouse of huge memory consumptation
+        // avoid using "glob()" because of huge memory consumption
         $F= @dir($Dir);
         if ($F === false) {
             return false;
@@ -475,14 +475,12 @@ class File {
 
     /**
      * Create list of files from directory including files in subdirectories.
-     * Target direcotry will be calculated as $Dir.'/'.$SubPath
+     * Target directory will be calculated as $Dir.'/'.$SubPath
      * and $SubPath will be added as prefix to result items.
      *
      * @param string $Dir
+	 * @param array $Options
      * @param string $SubPath
-     * @param bool $AllowFirstDot
-     * @param bool $AllowDirs should list contain subdirectory names
-     * @param bool $AllowFiles should list contain file names
      * @return array|boolean
      */
     public function ReadDirectoryRecursive($Dir, $Options=array(), $SubPath= '') {
@@ -513,6 +511,7 @@ class File {
         natcasesort($Files);
         return $Files;
     }
+
 
     // internal method for ReadDirectoryRecursive().
     protected function IsValidReadDirectoryEntry($Name, $Dir, $Options) {
@@ -550,6 +549,7 @@ class File {
         }
         return true;
     }
+
 
     // internal method for ReadDirectoryRecursive().
     protected function TestFileNameMask($FileName, $Mask) {
@@ -813,4 +813,3 @@ class File {
 
 }
 
-?>

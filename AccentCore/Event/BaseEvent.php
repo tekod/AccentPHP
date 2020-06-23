@@ -83,6 +83,9 @@ class BaseEvent extends Component {
 
     /**
      * Magic getter.
+	 *
+	 * @param string $Name
+	 * @return mixed
      */
     public function __get($Name) {
 
@@ -100,32 +103,22 @@ class BaseEvent extends Component {
 
 
     /**
-     *
-     * @return type
+     * Check is this event marked as handled.
+	 *
+     * @return bool
      */
     public function IsHandled() {
 
         return $this->IsHandled;
     }
 
+
+	/**
+	 * Mark thios event as handled.
+	 */
     public function SetHandled() {
 
         $this->IsHandled= true;
     }
-/*
-    public function SetContext(array $Context) {
-
-        $this->Context= $Context;
-    }
-
-
-    public function GetContext($Name=null) {
-
-         return $Name === null
-            ? $this->Context
-            : (isset($this->Context[$Name]) ? $this->Context[$Name] : null);
-    }*/
 
 }
-
-?>

@@ -135,4 +135,3 @@ class Test__Logger extends AccentTestCase {
 }
 
 
-?>

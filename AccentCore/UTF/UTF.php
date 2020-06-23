@@ -780,4 +780,3 @@ class UTF extends Component {
 
 } // end of class
 
-?>

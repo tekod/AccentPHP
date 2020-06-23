@@ -15,7 +15,6 @@
  * An component should emit message on info level at just few places in code, for example information about state of
  * component or important changes. Developers usually set 'DefaultLevel' in tracer configuration to 'info' to have
  * overview of application's lifecycle so don't overwhelm them with tons of messages.
- * Debug messages can be
  */
 
 use \Accent\AccentCore\Component;
@@ -63,6 +62,14 @@ class Tracer extends Component {
     }
 
 
+	/**
+	 * Main method. It will store message in tracing log.
+	 *
+	 * @param string $Section
+	 * @param int $Level
+	 * @param string $Message
+	 * @param bool $AppendCallStack
+	 */
     public function Trace($Section, $Level, $Message, $AppendCallStack=false) {
 
         if (!$this->Debugger) {
@@ -164,5 +171,3 @@ class Tracer extends Component {
 
 }
 
-
-?>

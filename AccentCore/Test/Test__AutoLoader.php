@@ -167,5 +167,3 @@ class Test__Accent_AutoLoader extends AccentTestCase {
 
 }
 
-
-?>

@@ -160,5 +160,3 @@ class Terminator extends Component {
     }
 
 }
-
-?>

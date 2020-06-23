@@ -215,4 +215,3 @@ class Test__UTF extends AccentTestCase {
 }
 
 
-?>

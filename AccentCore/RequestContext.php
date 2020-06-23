@@ -1,10 +1,10 @@
 <?php namespace Accent\AccentCore;
 
 /**
- * RequestContext is data-object, containing values from HTTP request (superglobals).
- * It does not interpret that data, but some normalization will be perfomed.
+ * RequestContext is data-object, containing values from HTTP request (super-globals).
+ * It does not interpret that data, but some normalization will be performed.
  *
- * Components should access to superglobals through this object in order to make testing possible,
+ * Components should access to super-globals through this object in order to make testing possible,
  * also this is solution for serving modified values to components within sub-requests.
  */
 
@@ -40,13 +40,13 @@ class RequestContext extends Component {
 
 
     /**
-     * Populate this data-object with values from superglobals like $_SERVER, $_ENV, $_POST,...
+     * Populate this data-object with values from super-globals like $_SERVER, $_ENV, $_POST,...
      *
      * @return self
      */
     public function FromGlobals() {
 
-        // retrieve values from superglobal variables
+        // retrieve values from super-global variables
         // cannot use variable variables in loop because of PHP bug #65223
         $this->GET   = $_GET;
         $this->POST  = $_POST;
@@ -142,7 +142,7 @@ class RequestContext extends Component {
      * There is shortcut method Component::Input to reach this method.
      *
      * @param string $Key           name of GET/POST value to fetch
-     * @param atring $Sanitizers    list of sanitizers separated by "|"
+     * @param string $Sanitizers    list of sanitizers separated by "|"
      * @param mixed $DefaultValue   return this value if key not found
      * @return mixed
      */
@@ -232,7 +232,7 @@ class RequestContext extends Component {
     }
 
 
-    /*
+    /**
      * The following method is based on code of the Zend Framework (1.10dev - 2010-01-24)
      * Copyright (c) 2005-2010 Zend Technologies USA Inc. (new BSD license)
      */
@@ -281,4 +281,4 @@ class RequestContext extends Component {
 
 }
 
-?>
+

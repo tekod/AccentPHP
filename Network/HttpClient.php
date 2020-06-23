@@ -659,8 +659,6 @@ class HttpClient extends Component {
 //            $this->ResponseContent= gzinflate(substr($this->ResponseContent, 10));
 //        }
 
-//d($this->ResponseHeaders);
-
         // debug info
         $this->TraceDebug("Network/HttpClient: response body:\n".($ToFile
                 ? 'Stored in file: '.$this->GetOption('ResponseToFile')

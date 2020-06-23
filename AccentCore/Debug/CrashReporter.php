@@ -9,32 +9,32 @@
  */
 
 /**
- * CrashReporter will send/store usefull informations on FatalError occurances.
+ * CrashReporter will send/store useful information on FatalError occurrences.
  *
  * It is split in two main blocks: "collector" and "writer".
- * During first stage collector will collect all informations that need to be sent to admins,
- * and on second stage writer perform actaul sending to specified devices or personal.
+ * During first stage collector will collect all information that need to be sent to admins,
+ * and on second stage writer perform actual sending to specified devices or personal.
  *
- * Collector will gather following informations by itself:
+ * Collector will gather following information by itself:
  *   - file, line and message with cause of fatal error
  *   - contents of $_SERVER, $_POST, $_COOKIE, $_ENV
  *   - timestamp
  *
  * Additionally collector will call user defined callback to let application chance
- * to provide more usefull informations.
+ * to provide more useful information.
  * Typically via callback application will return:
  *   - id of logged user
  *   - tags (for search)
- *   - sender (name of site/application, usefull for search in centralized message storage)
- *   - version of application (usefull for search in centralized message storage)
+ *   - sender (name of site/application, useful for search in centralized message storage)
+ *   - version of application (useful for search in centralized message storage)
  *
  * Finally, collector will dispatch "CrashReporterCollector" event to gather more info from listeners.
  *
- * Writer has following built-in means for sending informations:
+ * Writer has following built-in means for sending information:
  *  - log file - will store report by appending "log" file in local filesystem
  *  - URL - will send (POST HTTP) report to remote web site/service as JSON packed text
  *  - email - will send report to email address(es)
- *  - callable - will forward collected informations to supplied callback function
+ *  - callable - will forward collected information to supplied callback function
  *
  * Writing to database requires too many parameters (dsn, username, password, table, columns)
  * and cannot be specified with simple string so "callable" writer must be use instead.
@@ -89,7 +89,7 @@ class CrashReporter extends Component {
         // set to string with full path to log file to store simulated data
         'Testing'=> false,
 
-        // servicess
+        // services
         'Services'=> array(
             // 'Event'=> 'Event',  // must be specified in order to dispatch events
         ),
@@ -201,16 +201,16 @@ class CrashReporter extends Component {
         // allow later methods to use utilities from Debug component
         $this->Debug= new Debug();
 
-        // collect informations
+        // collect information
         $Data= $this->Collect($Error);
 
-        // dispach informations
+        // dispatch information
         $this->Write($Data);
     }
 
 
     /**
-     * Collector of informations that will be sant to writers.
+     * Collector of information that will be sent to writers.
      *
      * @return array
      */
@@ -231,7 +231,7 @@ class CrashReporter extends Component {
 
 
     /**
-     * Get informations that can be retrieved automaticaly.
+     * Get information that can be retrieved automatically.
      *
      * @param array $Error   report from error_get_last()
      * @return array
@@ -242,7 +242,7 @@ class CrashReporter extends Component {
         $Data= array(
             'FatalError'=> "\n  $Error[message]\n  in file: $Error[file]\n  on line: $Error[line]",
             'Timestamp' => "\n  ".date('r'),
-            //'CallStack' => $this->RenderCallStack(),
+            //'CallStack' => $this->RenderCallStack(),	// unfortunately PHP lose all backtrace data on FatalError
             '$_SERVER'  => $this->VarDump($this->GetServerPool()),
             '$_POST'    => $this->VarDump($Context->POST),
             '$_COOKIE'  => $this->VarDump($Context->COOKIE),
@@ -258,7 +258,7 @@ class CrashReporter extends Component {
 
 
     /**
-     * Get informations provided by developer's callback listener.
+     * Get information provided by developer's callback listener.
      *
      * @param array $Data  collected information about fatal error
      * @return array
@@ -301,7 +301,7 @@ class CrashReporter extends Component {
     /**
      * Main writing method will delegate actual writing to configured writers.
      *
-     * @param array $Data  collection of debuging informations
+     * @param array $Data  collection of debugging information
      */
     protected function Write($Data) {
 
@@ -312,7 +312,7 @@ class CrashReporter extends Component {
         // run all writers
         foreach ($this->Writers as $Writer) {
 
-            // skip obviusly invalid items
+            // skip obviously invalid items
             if (!$Writer) {
                 continue;
             }
@@ -333,13 +333,13 @@ class CrashReporter extends Component {
             // 3rd param can be anything, scalar, array, object
             if (is_array($Writer) && isset($Writer[2])) {
                 $Param= array_pop($Writer);
-                $Writer($Param, $Data);
+                $Writer($Param, $Data, $this);
                 continue;
             }
 
-            // for other types of callable invoke it with single param
+            // for other types of callable
             if (is_callable($Writer)) {
-                $Writer($Data);
+                $Writer($Data, $this);
             }
         }
     }
@@ -367,7 +367,7 @@ class CrashReporter extends Component {
     //-----------------------------------------------------------------
 
     /**
-     * Writer "LogFile" will store informations in flat text file.
+     * Writer "LogFile" will store information in flat text file.
      *
      * @param string $Para  full path to log file
      * @param array $Data
@@ -391,7 +391,7 @@ class CrashReporter extends Component {
 
 
     /**
-     * Writer "Email" will send informations via email.
+     * Writer "Email" will send information via email.
      *
      * @param string $Para  string packed as "To:From:Subject"
      * @param array $Data
@@ -401,7 +401,7 @@ class CrashReporter extends Component {
         // separate config parameter by ":"
         $Parts= explode(':', $Para);
 
-        // prepare "To" field of messsage
+        // prepare "To" field of message
         // multiple addresses can be specified as comma-separated string
         $To= str_replace(array("\r","\n","\t"), '', $Parts[0]);
 
@@ -425,8 +425,10 @@ class CrashReporter extends Component {
 
         // few headers
         $Headers= "From: $From\r\nReply-To: $From\r\nReturn-Path: $From";
+        $Headers .= "MIME-Version: 1.0\r\n";
+        $Headers .= "Content-Type: text/html; charset=UTF-8 \r\n";
 
-        // simulate email for testing envirnoment
+        // simulate email for testing environment
         if (isset($Data['Testing'])) {
             $Dump= var_export(compact('To','Subject','Body','Headers'), true);
             $Dump= "\n\n=====================================\nWriteToEmail (simulation):$Dump";
@@ -441,7 +443,7 @@ class CrashReporter extends Component {
 
 
     /**
-     * Writer "URL" will send informations to remote host using socket.
+     * Writer "URL" will send information to remote host using socket.
      *
      * @param string $Para  target URL address
      * @param array $Data
@@ -464,7 +466,7 @@ class CrashReporter extends Component {
 
 
     /**
-     * Writer "Callable" will send array of informations to callback function defined
+     * Writer "Callable" will send array of information to callback function defined
      * as "StaticClass:Method" or simple "MyFunction".
      *
      * @param string $Para  "StaticClass
@@ -493,6 +495,10 @@ class CrashReporter extends Component {
 
     /**
      * Helper, pack array to nice formatted text.
+     * This method is public to allow external writers (callbacks) to prepare message body.
+	 *
+	 * @param array $Data
+	 * @return string
      */
     public function RenderPlainData($Data) {
         // this method is made public to allow formatting from custom writers
@@ -511,32 +517,22 @@ class CrashReporter extends Component {
 
 
     /**
-     * Helper, preparing callstack informations.
-     * Unfortunatelly it seems that PHP within shutdown event cannot access debug-backtrace
+     * Helper, preparing callstack information.
+     * Unfortunately it seems that PHP within shutdown event cannot access debug-backtrace
      * so this method remains unused.
      */
     protected function RenderCallStack() {
 
-        $CallStack= debug_backtrace();
-        $Lines= array();
-        foreach($CallStack as $k=>$v) {
-            $Where= isset($v['file']) ? $v['file'] : "unknown file";
-            $Where .= isset($v['line']) ? ":$v[line]" : " (unknown line number)";
-            $Args= '';
-            foreach (isset($v['args']) ? $v['args'] : array() as $ArgKey => $ArgVal) {
-                $Args.= "\n        ".($ArgKey+1).': '.$this->VarDump($ArgVal, 3);
-            }
-            if ($Args !== '') {
-                $Args= ",   arguments:".$Args;
-            }
-            $Lines[]= '#'.($k+1).': '.$Where.$Args;
-        }
-        return "\n  ".implode("\n  ",$Lines);
+        return Debug::ShowSimplifiedStack();
     }
 
 
     /**
      * Helper, rendering value of variable.
+	 *
+	 * @param mixed $Var
+	 * @param int $Indent
+	 * @return string
      */
     protected function VarDump($Var, $Indent=1) {
 
@@ -546,7 +542,7 @@ class CrashReporter extends Component {
 
 
     /**
-     * Helper, returning $_SERVER array without few big and unneccesary items.
+     * Helper, returning $_SERVER array without few big and unnecessary items.
      */
     protected function GetServerPool() {
 
@@ -557,4 +553,3 @@ class CrashReporter extends Component {
 
 }
 
-?>

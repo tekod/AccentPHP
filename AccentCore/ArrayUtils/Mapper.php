@@ -10,34 +10,34 @@
 
 /*
  * Mapper is object responsible for transforming/adapting/customizing
- * associative arrays between two sub-systems with diferent naming strategies.
+ * associative arrays between two sub-systems with different naming strategies.
  *
  * For example there is common situation that developer have to implement
  * storing some entity (object or array of values) to database but keys of
- * array are not compatibile with field names in database table.
+ * array are not compatible with field names in database table.
  * Table is already in use by other systems and entity is part of already
- * finnished, well tested and proved project.
+ * finished, well tested and proved project.
  * Mapper can be injected between them to handle this issue.
  * Entity should send values to mapper first and then result of mapping send
- * to database, and in oposite direction data fetched from database should
+ * to database, and in opposite direction data fetched from database should
  * pass through mapper before analyzing them.
  *
- * Objects utilizing mapper offers to developers posibility to customize such
+ * Objects utilizing mapper offers to developers possibility to customize such
  * importing and exporting data without need to modify object itself.
- * All that developer need to do is to provide its own map in object's contructor.
+ * All that developer need to do is to provide its own map in object's constructor.
  * And even more, instead of map developer can inject its own instantied class
- * (descendant of Mapper) and put some bussines logic in so multiple values can
- * be splitted and joined, modified or removed from array.
+ * (descendant of Mapper) and put some business logic in so multiple values can
+ * be split and joined, modified or removed from array.
  *
  * Terms:
  *  - "map" here indicates simple array of "from"=>"to" pairs.
  *  - "mapping" indicates process of translating array from "standard" to "customized" struct.
- *  - "remapping" indicates oposite process, from "customized" to "standard" struct.
+ *  - "remapping" indicates opposite process, from "customized" to "standard" struct.
  *
  * Beside simple altering array keys this class has several advanced features:
  *  - it can be instructed to remove particular keys from result
  *  - it can be instructed to move particular keys to secondary array
- *  - it can be instructed that all uknown keys move to secondary array or to delete them
+ *  - it can be instructed that all unknown keys move to secondary array or to delete them
  *
  * Rules used for this particular class are:
  *  - keys that are mapped as boolean false will be removed from result
@@ -75,7 +75,7 @@ class Mapper {
      * @param int $Purgatory  where to send values from unmapped keys: 1=Primary, 2=Secondary, 0=delete
      * @param bool $AddMissingKeys  set all mapped keys without supplied value to null
      * @param bool $ReturnBothBuffers  should return both buffers as array(0=>Pri., 1=>Sec.)
-     * @return array  Primary buffer or both buffers
+     * @return array|false  Primary buffer or both buffers
      */
     public function MapArray($Values, $Purgatory=1, $AddMissingKeys=true, $ReturnBothBuffers=false) {
 
@@ -126,7 +126,7 @@ class Mapper {
      * @param int $Purgatory  where to send values from unmapped keys: 1=Primary, 2=Secondary, 0=delete
      * @param bool $AddMissingKeys  set all mapped keys without supplied value to null
      * @param bool $ReturnBothBuffers  should return both buffers as array(0=>Pri., 1=>Sec.)
-     * @return array  Primary buffer or both buffers
+     * @return array|false  Primary buffer or both buffers
      */
     public function ReMapArray($Values, $Purgatory=1, $AddMissingKeys=true, $ReturnBothBuffers=false) {
 
@@ -173,6 +173,12 @@ class Mapper {
     /**
      * Perform same transformation as MapArray but on array of arrays.
      * Keys of main array are preserved.
+	 *
+	 * @param array $Values
+	 * @param int $Purgatory
+	 * @param bool $AddMissingKeys
+	 * @param bool $ReturnBothBuffers
+	 * @return array|false
      */
     public function MapArray2D($Values, $Purgatory=1, $AddMissingKeys=true, $ReturnBothBuffers=false) {
 
@@ -193,6 +199,12 @@ class Mapper {
     /**
      * Perform same transformation as ReMapArray but on array of arrays.
      * Keys of main array are preserved.
+	 *
+	 * @param array $Values
+	 * @param int $Purgatory
+	 * @param bool $AddMissingKeys
+	 * @param bool $ReturnBothBuffers
+	 * @return array|false
      */
     public function ReMapArray2D($Values, $Purgatory=1, $AddMissingKeys=true, $ReturnBothBuffers=false) {
 
@@ -250,8 +262,4 @@ class Mapper {
             : ($Pass ? $MappedKey : null);
     }
 
-
-
 }
-
-?>

@@ -127,4 +127,3 @@ class Test__EscapeTrait extends AccentTestCase {
 
 }
 
-?>

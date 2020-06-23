@@ -461,5 +461,3 @@ class Test__Collection extends AccentTestCase {
     }
 
 }
-
-?>

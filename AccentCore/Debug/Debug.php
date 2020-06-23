@@ -9,9 +9,9 @@
  */
 
 /**
- * Set of methods for various debuging tasks:
+ * Set of methods for various debugging tasks:
  *   - measuring time of execution (benchmark, profiling)
- *   - getting tracing data to particlar execution point (call stack)
+ *   - getting tracing data to particular execution point (call stack)
  *   - generating application execution log
  *   - displaying arbitrary variable content
  *   - getting list and sizes of currently included PHP files
@@ -19,15 +19,15 @@
  * This class is self-contained in order to achieve isolation of running
  * application and current context of its execution.
  * That also allows to use methods at very early stages of application workflow.
- * Becouse of that it does NOT depend on any other classes from core package,
+ * Because of that it does NOT depend on any other classes from core package,
  * not even Component class.
  *
- * Example of using staticaly:
+ * Example of using statically:
  *     use \Accent\AccentCore\Debug\Debug;
  *     Debug::Instance()->LoggerStart(...);
  *     Debug::Instance()->Log(...);
  *     Debug::Instance('MyAnotherInstance')->LoggerStart(...);
- * Example of calling dynamicaly:
+ * Example of calling dynamically:
  *     $Debug= new \Accent\AccentCore\Debug\Debug;
  *     $Debug->LoggerStart(...);
  *     $Debug->Log(...);
@@ -35,7 +35,7 @@
  *
  * This class is not descendant of Component class in order to be operative as early as possible
  * and be independent and isolated from other systems.
- * That's why it has directly access to superglobals.
+ * That's why it has directly access to super-globals.
  */
 
 
@@ -110,9 +110,9 @@ class Debug {
 
 
     /**
-     * Factory (singleton) method for invoking class staticaly.
+     * Factory (singleton) method for invoking class statically.
      *
-     * @param string $InstanceName  allows to call specified instacne by its name
+     * @param string $InstanceName  allows to call specified instance by its name
      * @param array $Options  configuration for new object
      * @return object
      */
@@ -125,7 +125,7 @@ class Debug {
     }
 
 
-    /*
+    /**
      * Is current visitor authenticated as developer?
      * This will allow writing log files on disk.
      */
@@ -152,7 +152,7 @@ class Debug {
      *
      * @param int $n  specify which point to show
      * @param bool $ShowFullPath  whether to show only basename of file or full path
-     * @return type
+     * @return string
      */
     public static function ShowStackPoint($n, $ShowFullPath=true) {
 
@@ -170,14 +170,15 @@ class Debug {
     		: ", unknown line number";
     	return ($Res)
     		? $Res
-    		: "sorry, no informations about point '$n'.";
+    		: "sorry, no information about point '$n'.";
     }
 
 
     /**
      * Display all "call stack" points.
-     * This method can be called staticaly and dynamicaly.
+     * This method can be called statically and dynamically.
      *
+	 * @param bool $RenderTable
      * @return string|array
      */
     public static function ShowStack($RenderTable=true) {
@@ -223,9 +224,11 @@ class Debug {
 
 
     /**
-     * Display all "call stack" points as simplifed list.
-     * This method can be called staticaly and dynamicaly.
+     * Display all "call stack" points as simplified list.
+     * This method can be called statically and dynamically.
      *
+	 * @param array $RemovePrefixes
+	 * @param int $SkipSteps
      * @return string
      */
     public static function ShowSimplifiedStack($RemovePrefixes=array(), $SkipSteps=0) {
@@ -258,6 +261,28 @@ class Debug {
     }
 
 
+    /**
+     * Display call stack in single text line.
+     *
+     * @param string $Separator  glue between stack points
+	 * @param int $SkipSteps  number of final stack steps to skip
+     * @return string
+     */
+    public static function ShowShortStack($Separator=' &rarr; ', $SkipSteps=0) {
+
+        $btOptions= defined('DEBUG_BACKTRACE_IGNORE_ARGS') ? DEBUG_BACKTRACE_IGNORE_ARGS : false;
+        $CallStack= debug_backtrace($btOptions);
+		$CallStack= array_slice($CallStack, $SkipSteps);
+        $ShortStackTrace= '';
+        foreach($CallStack as $i=>$Trace) {
+            $Where= (isset($Trace['file'])) ? basename($Trace['file']) : "unknown file";
+            $Where .= (isset($Trace['line'])) ? "[$Trace[line]]" : "[?]";
+            $ShortStackTrace= $Where.($i > 0 ? $Separator : '').$ShortStackTrace;
+        }
+        return $ShortStackTrace;
+    }
+
+
 
 //---------------------------------------------------------------------------
 //
@@ -265,11 +290,11 @@ class Debug {
 //
 //---------------------------------------------------------------------------
 
-
     /**
      * Inities logging system.
      *
-     * @param string|bool $LogFile  full path to output logging file ('.php' will be appened) or true to store logs in memory
+     * @param string|bool $LogFile  full path to output logging file ('.php' will be append) or true to store logs in memory
+	 * @param string $Caption  heading of document
      */
     public function ProfilerStart($LogFile, $Caption='DEBUG LOG') {
 
@@ -372,16 +397,16 @@ class Debug {
 
         // result
         return $AsHTML
-            ? '<style>'
+            ? "\n".'<style type="text/css">'
                 .'.AccDbgVD {background:#111;color:#fff;padding:3px;margin:0;font:normal 13px sans-serif;}'
                 .'.AccDbgVD ul {display:none;padding:2px 2px 2px 16px;margin:0;background:#111;color:#fff;border-left:1px dashed #666;}'
-                .'.AccDbgVD ul li {display:block;}'
+                .'.AccDbgVD ul li {display:block; line-height:1em;}'
                 .'.AccDbgVD abbr {color:#8cf;font-weight:bold;cursor:pointer;}'
                 .'.AccDbgVD b {color:#ca8;font-weight:bold;}'
                 .'.AccDbgVDO {color:#866 !important}'
                 .'.AccDbgVDO + ul {display:block}'
-                .'</style>'
-                .'<div class="AccDbgVD">'.$Dump.'</div>'
+                .'</style>'."\n"
+                .'<div class="AccDbgVD">'.$Dump.'</div>'."\n"
             : $Dump;
     }
 
@@ -442,7 +467,7 @@ class Debug {
                     if (substr($k,0,3) === "\x00\x2A\x00") { // remove marker 'protected'
                         $k= substr($k,3);
                     }
-                    if ($k{0} === "\x00") { // skip 'private' properties
+                    if ($k[0] === "\x00") { // skip 'private' properties
                         continue;
                     }
                     $List[]= sprintf($KeyValueFormat,
@@ -503,7 +528,7 @@ class Debug {
     /**
      * Returns list of all files which are loaded with 'include' or 'require'.
      *
-     * @return array  sorted list with paths and filesizes
+     * @return array  sorted list with paths and file sizes
      */
     public function GetIncludedFiles() {
 
@@ -524,7 +549,7 @@ class Debug {
 
 
     /**
-     * Shows big global variables (larger then 1kb) and their memory ocupation.
+     * Shows big global variables (larger then 1kb) and their memory occupation.
      * Because this process destroys almost all defined variables it terminates
      * application execution.
      * This method can be called statically and dynamically.
@@ -588,4 +613,3 @@ class Debug {
 
 }
 
-?>

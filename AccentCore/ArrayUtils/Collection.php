@@ -33,6 +33,8 @@ class Collection implements \IteratorAggregate {
 
     /**
      * Constructor
+	 *
+	 * @param array $Collection
      */
     public function __construct($Collection=array()) {
 
@@ -320,7 +322,7 @@ class Collection implements \IteratorAggregate {
 
 
     /**
-     * Put element sepcified using "dotted notation".
+     * Put element specified using "dotted notation".
      *
      * @param int|string $Key  index or key of item
      * @param mixed $Value  value to store in collection
@@ -482,6 +484,10 @@ class Collection implements \IteratorAggregate {
 
     /**
      * Similar to GetSlice() but imports result in the collection.
+	 *
+	 * @param int $Offset
+	 * @param int $Length
+	 * @return self
      */
     public function Slice($Offset, $Length=null) {
 
@@ -521,9 +527,9 @@ class Collection implements \IteratorAggregate {
 
 
     /**
-     * Returns array builded by merging collection and all supplied arrays.
+     * Returns array built by merging collection and all supplied arrays.
      * Items with associative keys will overwrite items in previous array.
-     * Items with numberic keys will be renumbered and appened to end of result.
+     * Items with numeric keys will be renumbered and append to end of result.
      * Merging is not recursive.
      * Values in collection are not modified.
      *
@@ -553,7 +559,6 @@ class Collection implements \IteratorAggregate {
     }
 
 
-
     /**
      * Returns array padded to specified length with specified value.
      * Associative keys will be preserved, numeric keys will be renumbered.
@@ -574,6 +579,11 @@ class Collection implements \IteratorAggregate {
 
     /**
      * Similar to GetPadded() but imports result in the collection.
+	 *
+	 * @param int $Length
+	 * @param mixed $Value
+	 * @param bool $AtEnd
+	 * @return self
      */
     public function Pad($Length, $Value, $AtEnd=true) {
 
@@ -643,7 +653,6 @@ class Collection implements \IteratorAggregate {
     }
 
 
-
     /**
      * Splits collection in two arrays according to callback.
      * Callback must return boolean, similar to array_filter().
@@ -667,10 +676,6 @@ class Collection implements \IteratorAggregate {
         return array($Result1, $Result2);
     }
 
-
 }
 
 
-
-
-?>

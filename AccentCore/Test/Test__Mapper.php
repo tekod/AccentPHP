@@ -268,4 +268,3 @@ class Test__Mapper extends AccentTestCase {
 }
 
 
-?>

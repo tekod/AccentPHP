@@ -598,4 +598,3 @@ class Test__File extends AccentTestCase {
 }
 
 
-?>

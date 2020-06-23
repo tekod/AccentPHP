@@ -114,4 +114,3 @@ class Test__Debug extends AccentTestCase {
 }
 
 
-?>

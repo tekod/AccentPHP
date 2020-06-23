@@ -25,4 +25,3 @@ class DemoEventA extends BaseEvent {
     }
 }
 
-?>

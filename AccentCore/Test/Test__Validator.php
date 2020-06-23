@@ -667,4 +667,3 @@ class Test__Validator extends AccentTestCase {
 }
 
 
-?>

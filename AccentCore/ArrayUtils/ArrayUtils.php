@@ -8,11 +8,6 @@
  * @link       http://www.accentphp.com
  */
 
-/*
-
-
-*/
-
 use \Accent\AccentCore\Component;
 
 
@@ -50,7 +45,6 @@ class ArrayUtils extends Component {
         }
         return $Merged;
     }
-
 
 
     /**
@@ -134,7 +128,6 @@ class ArrayUtils extends Component {
             return $ArrayKeys[$SearchPos-1];
         } else {
             return $ArrayValues[$SearchPos-1];
-
         }
 	}
 
@@ -153,7 +146,7 @@ class ArrayUtils extends Component {
 			$this->FatalError('Argument must be an array.');
 		}
 
-        // ensure uniqueness and value existace to allow searching for nearby element
+        // ensure uniqueness and value existence to allow searching for nearby element
         $Array[]= $Value;
         $Array= array_unique($Array);
 
@@ -164,17 +157,16 @@ class ArrayUtils extends Component {
         $ArrayValues= array_values($Array);
         $SearchPos= array_search($Value, $ArrayValues);
         if ($SearchPos === count($Array)-1) {
-            // there is no next value becouse it is higher value or array is empty
+            // there is no next value because it is higher value or array is empty
             return null;
         }
 
         // return previous value or key of previous value
         if ($ReturnKey) {
-            $ArrayKeys= array_keys($Array);         //   var_dump($ArrayKeys);die();
+            $ArrayKeys= array_keys($Array);
             return $ArrayKeys[$SearchPos+1];
         } else {
             return $ArrayValues[$SearchPos+1];
-
         }
 	}
 
@@ -222,7 +214,7 @@ class ArrayUtils extends Component {
 
     /*******************************************************
      *
-     *                 JSON format convertors
+     *                JSON format converters
      *
      *******************************************************/
 
@@ -242,7 +234,7 @@ class ArrayUtils extends Component {
     /**
      * Unserialize string into array.
      *
-     * @param array $Dump
+     * @param string $Dump
      * @return bool|mixed
      */
     public function JsonToArray($Dump) {
@@ -266,16 +258,16 @@ class ArrayUtils extends Component {
 
     /*************************************************************
      *
-     *                  YAML format convertors
+     *                  YAML format converters
      *
      *************************************************************/
 
     protected function IncludeOnceSpyc() {
 
         // Spyc class is 3rd party class and it doesn't use namespace.
-        // Becouse there are chances that Spyc can be used by other 3rd party libs
+        // Because there are chances that Spyc can be used by other 3rd party libs
         // it is wise to leave it in namespace where they expect to find it.
-        // To relax autoloader we will include class manualy becouse we know its exact location.
+        // To relax autoloader we will include class manually because we know its exact location.
         $Class= 'Spyc';
         if (!class_exists($Class, false)) {
             include(__DIR__."/$Class/$Class.php");
@@ -362,7 +354,7 @@ class ArrayUtils extends Component {
             return false;
         }
         $XML= new \SimpleXMLElement("<?xml version=\"1.0\"?><$RootTag></$RootTag>");
-        // append childs using recursion
+        // append children using recursion
         $this->ArrayToXml_AddChilds((array)$Array,$XML);
         // convert to XML string and return it
         return $XML->asXML();
@@ -384,7 +376,7 @@ class ArrayUtils extends Component {
 
     /*************************************************************
      *
-     *                   INI format convertors
+     *                   INI format converters
      *
      *************************************************************/
 
@@ -398,7 +390,7 @@ class ArrayUtils extends Component {
     public function ArrayToIni($Array, $Parent=array()) {
 
         $Indent= empty($Parent) ? '' : '  ';
-        // we must reorder values becouse INI format cannot close opened section,
+        // we must reorder values because INI format cannot close opened section,
         // so all scalar values must go before arrays
         $Scalars= array();
         $Sections= array();
@@ -436,4 +428,3 @@ class ArrayUtils extends Component {
 
 }
 
-?>

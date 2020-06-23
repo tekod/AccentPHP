@@ -34,6 +34,7 @@ class EventService extends Component {
     /**
      * Assign call to $Callable to $EventName event.
      *
+	 * @param string $EventName  name of event
      * @param string|array $Callable  executioner, see Component->ResolveCallable() for syntax
      * @param int $Priority   position in order of execution, lowest number will be executed first
      * @param null|object $Owner  can be used to detach all listeners in single call
@@ -62,6 +63,8 @@ class EventService extends Component {
 
     /**
      * Remove attached listener using value returned from AttachListener().
+	 *
+	 * @param string $Id
      */
     public function DetachListener($Id) {
 
@@ -99,7 +102,7 @@ class EventService extends Component {
      * @param BaseEvent|array $EventObject  instance of event object or array of it options
      * @param bool $ReturnEvent  whether to return event object instead of execution status
      * @param array $ExtraListeners  list of additional callables to execute
-     * @return bool  indication was any listener terminate execution loop
+     * @return bool|object  indication was any listener terminate execution loop
      */
     public function Execute($EventName, $EventObject=null, $ReturnEvent=false, $ExtraListeners=array()) {
 
@@ -119,13 +122,6 @@ class EventService extends Component {
 
         // set EventName property
         $EventObject->EventName= $EventName;
-        /*
-        // set execution context
-        $EventObject->SetContext(array(
-            'EventName'   => $EventName,                // listeners can be attached using wildcard
-            'EventService'=> $this,                     // allowing listeners to call other events
-            'App'         => $this->GetOption('App'),   // allowing listeners to access application
-        ));*/
 
         // loop
   	    foreach($Listeners as $Listener) {
@@ -303,7 +299,4 @@ class EventService extends Component {
         return array('Hits'=>$List, 'Misses'=>$this->Misses);
     }
 
-
 }
-
-?>

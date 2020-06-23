@@ -28,8 +28,8 @@ use Accent\AccentCore\Event\BaseEvent;
 abstract class Component {
 
 
-    // Basic constructor options for all components, avoid to modify this in descedant classes.
-    // Existance of fields in this array are mandatory for all subclasses.
+    // Basic constructor options for all components, avoid to modify this in descendant classes.
+    // Existence of fields in this array are mandatory for all subclasses.
     // Subclasses should add theirs specific options in $DefaultOptions array
     // This options will be overwritten by $DefaultOptions property and $Options in constructor.
     protected static $DefaultOptions= array(
@@ -59,7 +59,7 @@ abstract class Component {
 
     // This marker should be set during object construction, to inform caller
     // is object successfully prepared for work or not.
-    protected $Initied= null;
+    protected $Initiated= null;
 
     // Class basename
     protected $ClassName;
@@ -102,7 +102,7 @@ abstract class Component {
         // confirm successfully creation
         // there is no dependencies (services,files,...) to check so it is always true
         // descendant constructors can change this value according to its own dependencies
-        $this->Initied= true;
+        $this->Initiated= true;
     }
 
 
@@ -135,11 +135,12 @@ abstract class Component {
 
     /**
      * Report that object is successfully constructed.
+	 *
      * @return boolean
      */
-    public function IsInitied() {
+    public function IsInitiated() {
 
-        return $this->Initied;
+        return $this->Initiated;
     }
 
 
@@ -178,12 +179,12 @@ abstract class Component {
 
     /**
      * Smarter variant of array_merge function, overwriting nodes only if necessary.
-     * Arrays will be recursive appened instead of simply overwritten.
+     * Arrays will be recursive append instead of simply overwritten.
      * Items from later array will overwrite items from previous.
      *
      * There is two ways to instruct deletion of items in array:
      *  - adding item element with key null and value null (deleting siblings),
-     *  - prefixing key with "_" char (deleting childs)
+     *  - prefixing key with "_" char (deleting children)
      *
      * @param array $ArrayOfArrays
      * @return array
@@ -206,7 +207,7 @@ abstract class Component {
                     $Merged= array();
                 } else if (is_string($Key)) {  // note that null key is converted into "" internaly by PHP
                     // string key
-                    if ($Key !== '' && $Key{0} === '_') {
+                    if ($Key !== '' && $Key[0] === '_') {
                         $TmpKey= substr($Key, 1);
                         if (isset($Merged[$TmpKey]) && is_array($Merged[$TmpKey])) { // clear array
                             $Key= $TmpKey;
@@ -282,22 +283,22 @@ abstract class Component {
             case '_':
             case '@AppDir':
                     // full path to 'protected' dir of app.
-                    // (usefull for loading application scripts)
+                    // (useful for loading application scripts)
                     $Parts[0]= $this->Options['Paths']['AppDir']; break;
             case '@':
             case '@AccentDir':
                     // full path to directory where Accent packages are stored
-                    // (usefull for including libraries)
+                    // (useful for including libraries)
                     $Parts[0]= $this->Options['Paths']['AccentDir']; break;
             case '~':
             case '@DomainDir':
                     // path relative to domain root, usually "/"
-                    // (usefull for prefixing JS, img,... in HTML)
+                    // (useful for prefixing JS, img,... in HTML)
                     $Parts[0]= $this->Options['Paths']['DomainDir']; break;
             case '*':
             case '@SiteDir':
                     // full path to site root (entry index.php)
-                    // (usefull for manipulation with publicaly accessible files)
+                    // (useful for manipulation with public accessible files)
                     $Parts[0]= $this->Options['Paths']['SiteDir']; break;
             case '@ExtDir':
                     // full path to root of current extension
@@ -348,7 +349,7 @@ abstract class Component {
      * Resolving specified path and returns array of two strings:
      *  - full filesystem path
      *  - path relative to root of domain (URL path), or false if not accessible
-     * Supplied path must begining with one of prefixes from ResolvePath().
+     * Supplied path must beginning with one of prefixes from ResolvePath().
      *
      * @param string $Path
      * @return array
@@ -399,7 +400,7 @@ abstract class Component {
                 $Callable= array($Parent, substr($Callable, 2));
             }
             // resolve prefix '@' which referencing to a service
-            else if ($Callable{0} === '@') {
+            else if ($Callable[0] === '@') {
                 // resolve referencing method too, like "@Sanitizer:Sanitize"
                 $Parts= explode(':', substr($Callable, 1));
                 $Callable= isset($Parts[1])
@@ -412,7 +413,7 @@ abstract class Component {
             }
         }
         // resolve referencing a service with method
-        if (is_array($Callable) && is_string($Callable[0]) && $Callable[0]{0} === '@') {
+        if (is_array($Callable) && is_string($Callable[0]) && $Callable[0][0] === '@') {
             $Callable[0]= $this->GetService(substr($Callable[0], 1));
         }
         // return result
@@ -522,7 +523,7 @@ abstract class Component {
 
     /**
      * Similar as GetService but without resolving ServiceName.
-     * Returns anonimous function which will call GetService on execution time.
+     * Returns anonymous function which will call GetService on execution time.
      *
      * @param string $ServiceName
      * @return object
@@ -536,6 +537,7 @@ abstract class Component {
     /**
      * Check does specified service exist.
      *
+	 * @param string $ServiceName
      * @return bool
      */
     protected function HasService($ServiceName) {
@@ -618,7 +620,7 @@ abstract class Component {
     /**
      * Add new plugin to component.
      * Parameter is building configuration.
-     * Plugin will not be instantied immidiately, config will be stored in building roaster waiting for first usage.
+     * Plugin will not be instantiated immediately, config will be stored in building roaster waiting for first usage.
      * It means that plugin can remain uninstantied in application lifecycle.
      *
      * @param $Conf array
@@ -739,7 +741,7 @@ abstract class Component {
     /**
      * Shortcut to RequestObject options
      * or context of Request service as fallback
-     * or create context from superglobals as last fallback.
+     * or create context from super-globals as last fallback.
      *
      * @return \Accent\AccentCore\RequestContext
      */
@@ -933,7 +935,7 @@ abstract class Component {
     }
 
 
-    /*
+    /**
      * Log helper.
      * This method will check is logger service available and send message to it,
      * additionally it will call TraceInfo with same message.
@@ -961,7 +963,7 @@ abstract class Component {
     }
 
 
-    /*
+    /**
      * Tracer helpers.
      * Specifying level using Tracer::LEVEL_INFO is replaced by descriptive string to remove dependency on Tracer class.
      * Note that triggering this method before initialisation of Tracer service will simply reject messages.
@@ -1010,4 +1012,3 @@ abstract class Component {
 
 }
 
-?>

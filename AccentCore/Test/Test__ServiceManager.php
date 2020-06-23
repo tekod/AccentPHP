@@ -204,4 +204,3 @@ class Test__ServiceManager extends AccentTestCase {
 }
 
 
-?>

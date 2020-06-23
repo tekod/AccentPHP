@@ -38,7 +38,7 @@ class ServiceManager {
      * Register new service.
      * @param string $Name  Unique service name
      * @param string $Class  Full class name
-     * @param array $Options  Settings which will be passed to class contructor
+     * @param array $Options  Settings which will be passed to class constructor
      * @return boolean Success of registration
      */
     public function Register($Name, $Class, array $Options=array()) {
@@ -59,7 +59,7 @@ class ServiceManager {
             'Class'=> $Class,
             'Instance'=> null,
         );
-        if ($Options['Init']) {         // instantiate service immidiatelly and execute specified method
+        if ($Options['Init']) {         // instantiate service immediately and execute specified method
             $this->InstantiateService($Name);
             call_user_func(array($this->ServiceList[$Name]['Instance'], $Options['Init']));
         }
@@ -87,6 +87,10 @@ class ServiceManager {
 
     /**
      * Register new service as already instantiated object.
+	 *
+	 * @param string $Name
+	 * @param object $Object
+	 * @return bool
      */
     public function RegisterObject($Name, $Object) {
 
@@ -128,7 +132,7 @@ class ServiceManager {
 
     /**
      * Deferred variant of method "Get".
-     * Instead to immidiatly instantiate requested service it will return builder object.
+     * Instead to immediately instantiate requested service it will return builder object.
      * This way application will spend time on creating services only when they are really required.
      * Simply call builder object as function (invoke it) to trigger instantiation of that service.
      * Example: ... $T= $SM-GetLazy('DB'); ... $DBO= $T(); ... $DBO->Query('users').....
@@ -170,7 +174,7 @@ class ServiceManager {
 
     /*
      * Resolve alias to service name, including nested aliases.
-     * Existance of resulting name is not verified.
+     * Existence of resulting name is not verified.
      */
     protected function ResolveName($Name) {
 
@@ -261,7 +265,7 @@ class ServiceManager {
 
 
     /**
-     * For debuging purposes
+     * For debugging purposes
      */
     public function Debug_ShowServices() {
 
@@ -274,4 +278,3 @@ class ServiceManager {
 
 }
 
-?>

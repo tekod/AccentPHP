@@ -253,4 +253,3 @@ class Test__Event extends AccentTestCase {
 }
 
 
-?>

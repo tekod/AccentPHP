@@ -11,14 +11,14 @@
 /*
  * Sanitizer service offers support for common security tasks:
  *  - sanitizing user-supplied-variables to make them safe for further processing
- *  - escaping non-safe characters for unharmfull usage in output
+ *  - escaping non-safe characters for unharmful usage in output
  *
  * Typical usage:
  * $Service= $this->GetService('Sanitizer');
  * echo $Service->Sanitize($Input, 'I');
  * echo $Service->Sanitize($Input, 'I|Range:1..4'); // integer in range [1,2,3,4]
  * echo $Service->Sanitize($Input, 'Local|Float');  // delocalized float number (decimal delimiters)
- * echo $Service->Sanitize($Input, 'CU|T|Len:12');  // trimed, upercased, limited length on 12 chars
+ * echo $Service->Sanitize($Input, 'CU|T|Len:12');  // trimed, upercassed, limited length on 12 chars
  *
  * echo $F->EscapeHTML($Input);               // prevent HTML messing (Anti-XSS protection)
  */
@@ -69,6 +69,9 @@ class Sanitizer extends Component {
     /**
      * Registration of new sanitizer
      * example: $sanitizer->Add('TrimRight', 'Sanitize_trimright');
+	 *
+	 * @param string $sanitizerName
+	 * @param callable $Callable
      */
     public function Add($sanitizerName, $Callable) {
 
@@ -92,13 +95,20 @@ class Sanitizer extends Component {
             if ($Parts[0]==='') {
                 continue;    // no sanitizer, continue without modifications
             }
-  //echo"<br>Entry:$Rule, Name:$Name, Param:$Param,";
             $Var= $this->ApplySanitizer(strtoupper($Parts[0]), $Var, $Parts[1]);
         }
         return $Var;
     }
 
 
+	/**
+	 * Perform sanitization on variable.
+	 *
+	 * @param $Name
+	 * @param $Var
+	 * @param $Param
+	 * @return mixed
+	 */
     protected function ApplySanitizer($Name, $Var, $Param) {
 
         // get callable
@@ -375,5 +385,3 @@ class Sanitizer extends Component {
     }
 
 }
-
-?>

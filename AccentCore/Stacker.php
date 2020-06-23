@@ -16,15 +16,15 @@
  * At other side owner of object can easily add/remove instances to stack that will serve different data to clients.
  *
  * Example usecase:
- * it is bad idea registering class Accent\Request as a service becouse after creating subrequest
+ * it is bad idea registering class Accent\Request as a service because after creating sub-request
  * (forwarding) it must serve modified input data (URL, POST data,...) to controllers and models.
  * Solution is wrapping (stacking) Request service so clients will always get actual data from service
  * and remains unaware of switching inside of service.
  *
  * Usage:
  * | $RS= $this->RegisterService('Request', 'Accent\\AccentCore\\Stacker');
- * | $Reqest= new Request();
- * | $RS->StackerPush($Reqest, $this);
+ * | $Request= new Request();
+ * | $RS->StackerPush($Request, $this);
  * | ...
  * | echo $this->GetService('Request')->GetIP(); // will return IP address from last Request object in stack
  *
@@ -69,7 +69,7 @@ class Stacker {
      * Append new object in stack, further calls to 'Get' method will return this object.
      *
      * @param object $Object  instance of stacked objects
-     * @param mixed $Owner  unique identifier of owner, ussually "$this"
+     * @param mixed $Owner  unique identifier of owner, usually "$this"
      * @return self
      */
     public function StackerPush($Object, $Owner) {
@@ -84,7 +84,7 @@ class Stacker {
      * item before that element.
      * Note that element can be removed only by it's owner.
      *
-     * @param mixed $Owner  unique identifier of owner, ussually "$this"
+     * @param mixed $Owner  unique identifier of owner, usually "$this"
      * @return boolean|null  true=success, error(empty)=null, error(not owner)=false
      */
     public function StackerPop($Owner) {
@@ -108,7 +108,7 @@ class Stacker {
     /**
      * Append cloned version of last object in stack.
      *
-     * @param mixed $Owner  unique identifier of owner, ussually "$this"
+     * @param mixed $Owner  unique identifier of owner, usually "$this"
      * @return false|self
      */
     public function StackerClone($Owner) {
@@ -142,7 +142,7 @@ class Stacker {
 
 
     /**
-     * Magic method: retreive property from current object in stack.
+     * Magic method: retrieve property from current object in stack.
      */
     public function __get($Name) {
 
@@ -164,4 +164,3 @@ class Stacker {
 
 }
 
-?>

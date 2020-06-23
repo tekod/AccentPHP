@@ -9,12 +9,8 @@
  */
 
 
-
-
 class AutoLoader {
 
-
-    protected $Options;
 
     protected $DefaultOptions= array(
         'Cache'=> array(
@@ -37,9 +33,16 @@ class AutoLoader {
 
     protected $Processors= array();
 
+	protected $Options;
+
 
    // methods
 
+	/**
+	 * AutoLoader constructor.
+	 *
+	 * @param array $Options
+	 */
     public function __construct($Options=array()) {
 
         // add default options and store them
@@ -58,6 +61,8 @@ class AutoLoader {
 
     /**
      * Dispatch error message using $Options['ErrorFunc']
+	 *
+	 * @param string $Message
      */
     protected function Error($Message) {
 
@@ -127,7 +132,7 @@ class AutoLoader {
 
 
     /**
-     * Extend ability to find classfile by adding specialized resolvers.
+     * Extend ability to find class file by adding specialized resolvers.
      *
      * @param string $Name  simple identifier of processor
      * @param callable  $Callable method to execute
@@ -137,7 +142,6 @@ class AutoLoader {
         $this->Processors[$Name]= $Callable;
         $this->Rules[$Name]= array();
     }
-
 
 
     /**
@@ -175,7 +179,8 @@ class AutoLoader {
 
     /**
      * Autoloading handler.
-     * @param type $ClassName
+	 *
+     * @param string $ClassName
      * @return null|boolean
      */
     public function Load($ClassName) {
@@ -196,6 +201,8 @@ class AutoLoader {
      * @return string
      */
     public function GetLocation($ClassName) {
+
+    	$Path= '';
 
         // check is already resolved
         if (isset($this->Registry[$ClassName]) && is_file($this->Registry[$ClassName])) {
@@ -235,8 +242,6 @@ class AutoLoader {
 
     /**
      * Get map of classes from cache and append it to registry.
-     *
-     * @return array
      */
     protected function LoadRegistry() {
 
@@ -500,4 +505,3 @@ class AutoLoader {
     }
 
 }
-?>

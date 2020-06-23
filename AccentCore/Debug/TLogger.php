@@ -16,7 +16,7 @@
 
 class TLogger {
 
-    // permition to work
+    // permission to work
     protected $Enabled;
 
     // as string to specify path of log file
@@ -33,7 +33,7 @@ class TLogger {
     // width of each column (in chars)
     protected $ColumnWidths;
 
-    // alignemnt of each column (as STR_PAD_LEFT, STR_PAD_RIGHT, STR_PAD_BOTH)
+    // alignment of each column (as STR_PAD_LEFT, STR_PAD_RIGHT, STR_PAD_BOTH)
     protected $ColumnAligns;
 
     // chosen utf8 solution
@@ -52,7 +52,7 @@ class TLogger {
      * @param string|bool $LogFile  full path to output logging file, '.php' will be appended or true to store logs in memory
      * @param string $Caption  main title of report file
      * @param array $Columns  titles of columns, '|' char is multiline separator
-     * @param bool $Enabled  permition
+     * @param bool $Enabled  permission
      * @param bool $Overwrite  whether to overwrite log file on start or not
      */
     public function __construct($LogFile, $Caption= '', $Columns=array(), $Enabled=true, $Overwrite=true) {
@@ -201,7 +201,7 @@ class TLogger {
     protected function FormatFileLine($Data) {
 
         foreach($Data as &$Item) {
-            // convert $Item to string (intgers, floats, arrays to CSV)
+            // convert $Item to string (integers, floats, arrays to CSV)
             // pad strings according to Col record
             // handle multiline values
             $Item= explode("\n", $Item); // convert to array
@@ -344,5 +344,3 @@ class TLogger {
 
 
 }
-
-?>

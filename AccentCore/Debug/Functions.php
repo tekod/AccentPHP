@@ -5,7 +5,7 @@
  * Note: this method will echo content, not return it.
  *
  * @param mixed $Value  arbitrary value that need to be formatted
- * @param sting $Caption  caption/title/lable to be echoed above formatted value
+ * @param string $Caption  caption/title/label to be echoed above formatted value
  * @param bool $FormatingValue  internal, whether to format value or just to echo it
  * @return false|string  false if session is not authorized or string with type of value
  */
@@ -20,6 +20,9 @@ function d($Value, $Caption='', $FormatingValue=true) {
         return false;
     }
 
+	// override eventual JSON header
+	@header('Content-Type: text/html', true);
+
     // convert value to human friendly format
     if ($FormatingValue) {
         $Dump= trim($Debug->VarDump($Value, 1));
@@ -28,25 +31,16 @@ function d($Value, $Caption='', $FormatingValue=true) {
     }
 
     // prepare call-stack
-    $CallStack = debug_backtrace();
-    $ShortStackTrace= '';
-    foreach($CallStack as $i=>$Trace) {
-        $Where= (isset($Trace['file'])) ? basename($Trace['file']) : "unknown file";
-        $Where .= (isset($Trace['line'])) ? "[$Trace[line]]" : "[?]";
-        $ShortStackTrace= $Where.($i > 0 ? ' &rarr; ' : '').$ShortStackTrace;
-    }
+    $ShortStackTrace= \Accent\AccentCore\Debug\Debug::ShowShortStack(' &rarr; ', 1);
     $DetailedStackTrace= \Accent\AccentCore\Debug\Debug::ShowSimplifiedStack([], 1);
+    $DetailedStackTrace= preg_replace('~"(.*)"~', '"<b><i>$1</i></b>"', $DetailedStackTrace);
 
     // pack HTML and echo it
     echo '
-      <pre class="AccDbgVD" style="display:block; position:relative; background-color:#002840; color:#bcd; margin:6px 0; padding:1.5em 1em .6em 2em; font:normal 10px sans-serif; overflow-x:hidden">'
-        .'<div style="position:absolute; top:1px; right:3em; min-width:100%; font:normal 11px sans-serif; color:#aaa; white-space:nowrap;">'
-            .$ShortStackTrace
-            //.'<div class="AccDbgVD" style="padding-left:3em; position:relative;">'
-            //.'</div>'
-        .'</div>'
-        .'<abbr style="position:absolute; right:1em; top:0; cursor:pointer;" onclick="this.className=this.className===\'AccDbgVDO\'?\'\':\'AccDbgVDO\'">[...]</abbr>'
-        .'<ul style="background-color:#124; border:1px solid gray; float:right; font-size:14px;"><li>'.str_replace(["\n",'  '], ['</li><li>',' &nbsp; '], $DetailedStackTrace).'</li></ul>'
+      <pre class="AccDbgVD" style="display:block; position:relative; background-color:#002840; color:#bcd; margin:6px 0; padding:1px 1em .6em 1em; font:normal 10px sans-serif; overflow-x:hidden; white-space:pre-line; min-width:80em; text-align:left; z-index:999; line-height:0;">'
+        .'<div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; direction:rtl; text-align:left; font:normal 11px sans-serif; color:#aaa; padding-right:2em;">'.$ShortStackTrace.'</div>'
+        .'<abbr style="position:absolute; right:1em; top:0.5rem; cursor:pointer;" onclick="this.className=this.className===\'AccDbgVDO\'?\'\':\'AccDbgVDO\'">[...]</abbr>'
+        .'<ul style="background-color:#023; border:1px solid #666; border-top:none; font-size:14px; line-height:19px;"><li>'.str_replace(["\n",'  '], ['</li><li>',' &nbsp; '], $DetailedStackTrace).'</li></ul>'
         .($Caption === '' ? '' : '<b style="color:#8cf; font-size:13px">'.$Caption.' : </b>')
         .$Dump.'</pre>';
 
@@ -59,7 +53,7 @@ function d($Value, $Caption='', $FormatingValue=true) {
  * Same as "d();" but also terminate execution if authorized.
  *
  * @param mixed $Value  arbitrary value that need to be formatted
- * @param sting $Caption  caption/title/lable to be echoed above formatted value
+ * @param string $Caption  caption/title/label to be echoed above formatted value
  * @param bool $FormatingValue  internal, whether to format value or just to echo it
  */
 function d_d($Value, $Caption='', $FormatingValue=true) {
@@ -90,7 +84,8 @@ function d_hex($Value, $Caption='') {
         $Col[1][]= $HexLine;
         $Col[2][]= htmlspecialchars($Chars[$i], ENT_COMPAT, 'UTF-8');
     }
-    $Dump= '<pre><table border="1" style="border-collapse:collapse; font-size:inherit; color:#cba;"><tr>'
+    $Dump= '<pre style="margin:0; padding:0; border:none">'
+            .'<table border="1" style="border-collapse:collapse; margin:0; font-size:15px; color:#cba;"><tr>'
             .'<td style="padding:3px 5px; background-color:#112">'.implode('<br>',$Col[0]).'</td>'
             .'<td style="padding:3px 8px; background-color:#001">'.implode('<br>',$Col[1]).'</td>'
             .'<td style="padding:3px 5px; background-color:#112">'.implode('<br>',$Col[2]).'</td>'
@@ -118,6 +113,3 @@ function d_initialize($AuthKey, $CookieName='AccentDebugKey') {
     ));
 }
 
-
-
-?>

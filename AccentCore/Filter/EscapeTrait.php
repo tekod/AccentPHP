@@ -23,6 +23,10 @@ trait EscapeTrait {
      * Escaped javascript string will prevent unexpected closing-quote and newlines.
      * By default it is assumed that JS string using double qoutes for termination,
      * but there is additional parameter to modify that and specify all unsafe chars.
+	 *
+	 * @param string $Content
+	 * @param string $UnsafeChars
+	 * @return string
      */
     public function EscapeJsString($Content, $UnsafeChars='"') {
 
@@ -45,6 +49,9 @@ trait EscapeTrait {
 
     /**
      * Ensures that specified string will not be recognized as HTML content.
+	 *
+	 * @param string $Content
+	 * @return string
      */
     public function EscapeHTML($Content) {
 
@@ -54,6 +61,10 @@ trait EscapeTrait {
 
     /**
      * Escaping chars that are not safe in HTML tag attribute values.
+	 *
+	 * @param string $Content
+	 * @param bool $EnclosedWithQuote
+	 * @return string
      */
     public function EscapeAttribute($Content, $EnclosedWithQuote=true) {
 
@@ -65,12 +76,14 @@ trait EscapeTrait {
 
     /**
      * Ensure that specified string will not break out of enclosed <style> scope.
+	 *
+	 * @param string $Content
+	 * @return string
      */
     public function EscapeCSS($Content) {
 
         return strip_tags($Content);
     }
-
 
 
     /**
@@ -91,5 +104,3 @@ trait EscapeTrait {
     }
 
 }
-
-?>

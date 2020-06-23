@@ -11,9 +11,9 @@
 /*
  * Service Validator provides tool for checking contents of provided variables.
  *
- * Validating functions accept three parametars:
+ * Validating functions accept three parameters:
  *   1. value which need to be validated
- *   2. optional parametar to influence comparation process
+ *   2. optional parameter to influence comparison process
  *   3. instance of validator service to be accessed from external validators
  *
  * Context is buffer with all values needed to participate in validation process,
@@ -90,6 +90,7 @@ class Validator extends Component {
      * External validators can reach "context" by this method.
      *
      * @param string $Key
+	 * @return mixed
      */
     public function GetContextValue($Key) {
 
@@ -457,8 +458,9 @@ class Validator extends Component {
 	 * Validates a credit card number using the Luhn (mod10) formula.
 	 * @see http://en.wikipedia.org/wiki/Luhn_algorithm
 	 *
-	 * @param   integer       credit card number
-	 * @param   string        card type
+	 * @param integer       credit card number
+	 * @param string        card type
+	 * @return bool
 	 */
 	public function Validator_CreditCard($Number, $Type=null) {
 	    // in $Debug mode it returns empty string on valid CC number or message with error text
@@ -521,10 +523,11 @@ class Validator extends Component {
 	/**
 	 * Checks if a string is a proper decimal format.
 	 * The format to specify 4 digits and 2 decimal places should be '4.2'
-	 * Note: mysql limit for formating is '65.30'
+	 * Note: mysql limit for formatting is '65.30'
 	 *
-	 * @param   string   input string
-	 * @param   string   decimal format: '6.2'
+	 * @param string   input string
+	 * @param string   decimal format: '6.2'
+	 * @return bool
 	 */
 	public function Validator_Decimal($Value, $Params) {
 
@@ -609,11 +612,12 @@ class Validator extends Component {
     /**
      * Compare value with value of another form element.
      * This validator is expected to be used in form processing (class Form).
-     * 3rd parameter will automaticaly be added by Form::Validate as element object.
-     * Comparasion is made with '===' to avoid: '' == '0'.
+     * 3rd parameter will automatically be added by Form::Validate as element object.
+     * Comparison is made with '===' to avoid: '' == '0'.
      *
      * @param string  input string
      * @param string  name of form element which value will be compared with $Value
+	 * @return bool
      */
     public function Validator_SameInput($Value, $ReferenceName) {
 
@@ -625,5 +629,3 @@ class Validator extends Component {
 
 
 } // End validator class
-
-?>
