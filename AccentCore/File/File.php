@@ -528,7 +528,7 @@ class File {
         if ($Name === '.' || $Name === '..') {
             return false;
         }
-        if (!$Options['AllowFirstDot'] && $Name{0} === '.') {
+        if (!$Options['AllowFirstDot'] && $Name[0] === '.') {
             return false;
         }
         if (!$Options['AllowDirs'] && $IsDir) {

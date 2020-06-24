@@ -400,7 +400,7 @@ class UTF extends Component {
             return mb_convert_encoding($UTF16Strign, 'UTF-8', 'UTF-16');
         }
         // slower method then mb_convert_encoding
-        $Bytes = (ord($UTF16Strign{0}) << 8) | ord($UTF16Strign{1});
+        $Bytes = (ord($UTF16Strign[0]) << 8) | ord($UTF16Strign[1]);
         switch(true) {
             case ((0x7F & $Bytes) == $Bytes):
                 // this case should never be reached, because we are in ASCII range
@@ -440,16 +440,16 @@ class UTF extends Component {
             case 2:
                 // return a UTF-16 character from a 2-byte UTF-8 char
                 // see: http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
-                return chr(0x07 & (ord($UTF8String{0}) >> 2))
-                     . chr((0xC0 & (ord($UTF8String{0}) << 6))
-                         | (0x3F & ord($UTF8String{1})));
+                return chr(0x07 & (ord($UTF8String[0]) >> 2))
+                     . chr((0xC0 & (ord($UTF8String[0]) << 6))
+                         | (0x3F & ord($UTF8String[1])));
             case 3:
                 // return a UTF-16 character from a 3-byte UTF-8 char
                 // see: http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
-                return chr((0xF0 & (ord($UTF8String{0}) << 4))
-                         | (0x0F & (ord($UTF8String{1}) >> 2)))
-                     . chr((0xC0 & (ord($UTF8String{1}) << 6))
-                         | (0x7F & ord($UTF8String{2})));
+                return chr((0xF0 & (ord($UTF8String[0]) << 4))
+                         | (0x0F & (ord($UTF8String[1]) >> 2)))
+                     . chr((0xC0 & (ord($UTF8String[1]) << 6))
+                         | (0x7F & ord($UTF8String[2])));
         }
         // ignoring UTF-32 for now, sorry
         return '';
