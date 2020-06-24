@@ -56,7 +56,7 @@ class Test__LanguageResolver extends AccentTestCase {
 
         $Options= $this->BuildOptions();
         $LR= new LanguageResolver($Options);
-        $this->assertTrue($LR->IsInitied());
+        $this->assertTrue($LR->IsInitiated());
     }
 
 

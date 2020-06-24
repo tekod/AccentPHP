@@ -691,7 +691,7 @@ abstract class Component {
             );
 
             // add object to registry
-            if ($Plugin->IsInitied()) {
+            if ($Plugin->IsInitiated()) {
                 $this->Plugins['Objects'][$Priority][]= $Plugin;
             } else {
                 $this->Error($this->ClassName.': BuildPlugins: Class "'.$Class.'" failed to build.');

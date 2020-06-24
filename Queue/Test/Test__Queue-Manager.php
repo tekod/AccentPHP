@@ -61,7 +61,7 @@ class Test__Queue_Manager extends AccentTestCase {
 
         $C= $this->BuildComponent();
         // check is driver created successfully
-        $this->assertTrue($C->IsInitied());
+        $this->assertTrue($C->IsInitiated());
     }
 
 

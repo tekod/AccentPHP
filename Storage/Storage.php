@@ -79,7 +79,7 @@ class Storage extends Component {
         }
 
         // status of this object depends on status of driver object
-        $this->Initied= $this->Driver->IsInitied();
+        $this->Initied= $this->Driver->IsInitiated();
 
         // fallback to "none" driver if failed to initiate specified driver
 

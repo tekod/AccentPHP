@@ -66,7 +66,7 @@ class Test__Queue_Worker extends AccentTestCase {
 
         $Worker= $this->BuildComponent();
         // check is driver created successfully
-        $this->assertTrue($Worker->IsInitied());
+        $this->assertTrue($Worker->IsInitiated());
     }
 
 

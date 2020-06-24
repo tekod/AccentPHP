@@ -70,7 +70,7 @@ class Test__Cache extends AccentTestCase {
         );
         // clear test space
         foreach($this->Caches as $Cache) {
-            $this->assertTrue($Cache->IsInitied());
+            $this->assertTrue($Cache->IsInitiated());
             $Cache->Clear('*');
             $Cache->GarbageCollection();
         }

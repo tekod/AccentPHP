@@ -73,7 +73,7 @@ class Cache extends Component {
         $this->Storage= $Storage;
 
         // status of this object depends on status of storage object
-        $this->Initied= $this->Storage->IsInitied();
+        $this->Initied= $this->Storage->IsInitiated();
     }
 
 

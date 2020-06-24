@@ -86,7 +86,7 @@ class Worker extends Component {
 
         // setup driver
         $this->Driver= $this->BuildDriver();
-        $this->Initied= $this->Driver->IsInitied();
+        $this->Initied= $this->Driver->IsInitiated();
     }
 
 

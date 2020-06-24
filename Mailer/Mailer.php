@@ -81,7 +81,7 @@ class Mailer extends Component {
         $Message= new Message($Options);
 
         // return message if properly initiated, otherwise fallback to NoneDriver
-        return $Message->IsInitied()
+        return $Message->IsInitiated()
             ? $Message
             : new Message(array('Driver'=>'None') + $Options);
     }

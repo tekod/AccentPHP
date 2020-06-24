@@ -98,7 +98,7 @@ class Message extends Component {
 
         // instantiate driver
         $this->Driver= $this->CreateDriver();
-        $this->Initied= $this->Driver->IsInitied();
+        $this->Initied= $this->Driver->IsInitiated();
     }
 
 

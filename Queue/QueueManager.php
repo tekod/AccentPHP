@@ -46,7 +46,7 @@ class QueueManager extends Component {
         parent::__construct($Options);
 
         $this->Driver= $this->BuildDriver();
-        $this->Initied= $this->Driver->IsInitied();
+        $this->Initied= $this->Driver->IsInitiated();
     }
 
 

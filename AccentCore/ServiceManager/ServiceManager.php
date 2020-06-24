@@ -161,8 +161,8 @@ class ServiceManager {
         } catch (Exception $e) {
             // exit silently and leave $this->ServiceList[$Name]['Instance'] = null
         }
-        if (method_exists($Object,'IsInitied') && !$Object->IsInitied()) {
-            // service can implement IsInitied() method to signal
+        if (method_exists($Object,'IsInitiated') && !$Object->IsInitiated()) {
+            // service can implement IsInitiated() method to signal
             // that something went wrong during its construction
             $this->ServiceList[$Name]['Instance']= false;
             return false;

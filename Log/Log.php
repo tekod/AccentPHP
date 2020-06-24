@@ -122,7 +122,7 @@ class Log extends Component {
         // loop thru all writers
         foreach ($this->GetWritersList() as $Name) {
             $Writer= $this->GetWriter($Name);
-            if (is_object($Writer) && $Writer->IsInitied()) {
+            if (is_object($Writer) && $Writer->IsInitiated()) {
                 $Writer->Write($Message, $Level, $Data);
             }
         }
