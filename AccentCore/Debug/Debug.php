@@ -397,7 +397,15 @@ class Debug {
 
         // result
         return $AsHTML
-            ? "\n".'<style type="text/css">'
+            ? "\n".$this->VarDumpStyles()."\n"
+                .'<div class="AccDbgVD">'.$Dump.'</div>'."\n"
+            : $Dump;
+    }
+
+
+    public function VarDumpStyles() {
+
+        return '<style type="text/css">'
                 .'.AccDbgVD {background:#111;color:#fff;padding:3px;margin:0;font:normal 13px sans-serif;}'
                 .'.AccDbgVD ul {display:none;padding:2px 2px 2px 16px;margin:0;background:#111;color:#fff;border-left:1px dashed #666;}'
                 .'.AccDbgVD ul li {display:block; line-height:1.1em; margin:0; padding:3px 0 3px 0;}'
@@ -405,9 +413,7 @@ class Debug {
                 .'.AccDbgVD b {color:#ca8;font-weight:bold;}'
                 .'.AccDbgVDO {color:#866 !important}'
                 .'.AccDbgVDO + ul {display:block}'
-                .'</style>'."\n"
-                .'<div class="AccDbgVD">'.$Dump.'</div>'."\n"
-            : $Dump;
+                .'</style>';
     }
 
 

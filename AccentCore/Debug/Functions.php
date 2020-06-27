@@ -6,7 +6,8 @@
  *
  * @param mixed $Value  arbitrary value that need to be formatted
  * @param string $Caption  caption/title/label to be echoed above formatted value
- * @param bool $FormatingValue  internal, whether to format value or just to echo it
+ * @param bool|null $FormatingValue  internal, whether to format value or just to echo it,
+ *                  null will not format value but will prepend debug's css styles
  * @return false|string  false if session is not authorized or string with type of value
  */
 function d($Value, $Caption='', $FormatingValue=true) {
@@ -24,7 +25,7 @@ function d($Value, $Caption='', $FormatingValue=true) {
 	@header('Content-Type: text/html', true);
 
     // convert value to human friendly format
-    if ($FormatingValue) {
+    if ($FormatingValue === true) {
         $Dump= trim($Debug->VarDump($Value, 1));
     } else {
         $Dump= strval($Value);
@@ -34,6 +35,11 @@ function d($Value, $Caption='', $FormatingValue=true) {
     $ShortStackTrace= \Accent\AccentCore\Debug\Debug::ShowShortStack(' &rarr; ', 1);
     $DetailedStackTrace= \Accent\AccentCore\Debug\Debug::ShowSimplifiedStack([], 1);
     $DetailedStackTrace= preg_replace('~"(.*)"~', '"<b><i>$1</i></b>"', $DetailedStackTrace);
+
+    // should echo debug styles?
+    if ($FormatingValue === null) {
+        echo $Debug->VarDumpStyles();
+    }
 
     // pack HTML and echo it
     echo '
@@ -113,3 +119,13 @@ function d_initialize($AuthKey, $CookieName='AccentDebugKey') {
     ));
 }
 
+
+/**
+ * Return true if current request comes from authorized visitor.
+ *
+ * @return bool
+ */
+function d_is_authorized() {
+
+    return \Accent\AccentCore\Debug\Debug::Instance('d-dump', ['AuthKey'=>false])->IsAuthorizedSession();
+}
