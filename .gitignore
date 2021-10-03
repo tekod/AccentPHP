@@ -1,0 +1,9 @@
+
+# ignore test generated files
+/*/Test/tmp/*
+/*/*/Test/tmp/*
+/*/*/*/Test/tmp/*
+/*/*/*/*/Test/tmp/*
+
+# ignore editor configs
+/.idea/

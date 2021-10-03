@@ -33,6 +33,7 @@ class AccentTestCase extends \UnitTestCase {
     protected $TestCaseDB;
     protected $CoverageCheckers;
 
+
     /**
      * Contructor.
      */
